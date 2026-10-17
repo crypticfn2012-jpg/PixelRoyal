@@ -335,8 +335,8 @@ function dmg(p,d,o){if(!p.alive||G.over&&p===G.u)return;const d0=d;p.fl=.1;p.use
 if((o===G.u||p===G.u)&&G.fx.length<300)G.fx.push({x:p.x+(R()-.5)*14,y:p.y-18,vx:0,vy:-50,l:.7,c:o===G.u?'#ffe28a':'#ff7a6a',t:d0|0});if(p.hp<=0)kill(p,o)}
 const BUILD_TILE=76;
 function cardinal(a){return Math.round(a/(Math.PI/2))*(Math.PI/2)}
-function gridPoint(x,y){return{x:C+Math.round((x-C)/BUILD_TILE)*BUILD_TILE,y:C+Math.round((y-C)/BUILD_TILE)*BUILD_TILE}}
-function wallPose(p,a){const ang=cardinal(a),v=Math.abs(Math.cos(ang))<.5,pt=gridPoint(p.x+Math.cos(ang)*58,p.y+Math.sin(ang)*58),w=v?14:BUILD_TILE,h=v?BUILD_TILE:14;return{x:pt.x-w/2,y:pt.y-h/2,w,h,type:'wall',ang}}
+function gridPoint(x,y){return{x:C+BUILD_TILE/2+Math.round((x-(C+BUILD_TILE/2))/BUILD_TILE)*BUILD_TILE,y:C+BUILD_TILE/2+Math.round((y-(C+BUILD_TILE/2))/BUILD_TILE)*BUILD_TILE}}
+function wallPose(p,a){const ang=cardinal(a),v=Math.abs(Math.cos(ang))>.5,pt=gridPoint(p.x+Math.cos(ang)*58,p.y+Math.sin(ang)*58),w=v?14:BUILD_TILE,h=v?BUILD_TILE:14;return{x:pt.x-w/2,y:pt.y-h/2,w,h,type:'wall',ang}}
 function rampPose(p,a){const ang=cardinal(a),pt=gridPoint(p.x+Math.cos(ang)*66,p.y+Math.sin(ang)*66);return{x:pt.x-BUILD_TILE/2+4,y:pt.y-BUILD_TILE/2+4,w:BUILD_TILE-8,h:BUILD_TILE-8,type:'ramp',ang}}
 function wallValid(p,o){if(o.type==='ramp'){for(const q of G.W)if(q.x<o.x+o.w-3&&q.x+q.w>o.x+3&&q.y<o.y+o.h-3&&q.y+q.h>o.y+3)return false;return !BOX_OB.some(q=>o.x<q.x+q.w&&o.x+o.w>q.x&&o.y<q.y+q.h&&o.y+o.h>q.y)}
 for(const q of G.P)if(q!==p&&q.alive&&q.x>o.x-16&&q.x<o.x+o.w+16&&q.y>o.y-16&&q.y<o.y+o.h+16)return false;
