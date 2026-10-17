@@ -178,7 +178,7 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 <h1>PIXEL<span>ROYALE.IO</span></h1><canvas id="pvm" width="130" height="130"></canvas>
 <div id="modeSelect" aria-label="Choose a game mode">
 <button class="mode-card battle" onclick="play('br')"><span class="mode-kicker">20 FIGHTERS · SOLO</span><strong>BATTLE ROYALE</strong><small>Drop in, gear up and be the last player standing.</small><em>PLAY BATTLE ROYALE <b>→</b></em></button>
-<button class="mode-card boxfight" onclick="play('box')"><span class="mode-kicker">1V1 · FIRST TO 5</span><strong>BOX FIGHTS</strong><small>Fixed AR and shotgun loadout. Build, edit your angles and outplay one rival.</small><em>PLAY BOX FIGHTS <b>→</b></em></button>
+<button class="mode-card boxfight" onclick="play('box')"><span class="mode-kicker">1V1 · FIRST TO 5</span><strong>BOX FIGHTS</strong><small>Fixed AR and shotgun loadout. Build cover, hold angles and outplay one rival.</small><em>PLAY BOX FIGHTS <b>→</b></em></button>
 </div>
 <div class="row"><button class="b g" onclick="pn('shop')">SHOP</button><button class="b g" onclick="pn('up')">UPGRADES</button><button class="b g" id="brw" onclick="pn('rw')">REWARDS</button><button class="b g" onclick="pn('st')">STATS</button><button class="b g" onclick="pn('settings')">SETTINGS</button></div>
 <small class="hint">WASD move · Mouse aim &amp; shoot · F build mode · H medkit · J shield · 1–3 swap · ESC pause<br>Pick a mode above and jump into the fight.</small></div>
@@ -357,7 +357,7 @@ const g=b.guns[b.cur];if(!b.tg&&g.a<GUNS[g.t].m*.5)rld(b)}
 function upd(dt){const u=G.u,z=G.z;G.T+=dt;for(let i=G.L.length-1;i>=0;i--){const l=G.L[i];if(l.dropped&&G.T-(l.droppedAt??G.T)>=10)G.L.splice(i,1)}if(!S.settings.particles&&G.fx.length)G.fx.length=0;
 if(u.alive){let ix=(keys.d||0)-(keys.a||0),iy=(keys.s||0)-(keys.w||0),fr=ms.d;
 for(const t of Object.values(tc)){const dx=t.x-t.ox,dy=t.y-t.oy,m=Math.min(1,Math.hypot(dx,dy)/50);if(t.s=='m'){ix=dx/50;iy=dy/50;const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l}}else if(m>.15){u.ang=Math.atan2(dy,dx);if(m>.3)fr=1}}
-if(!MOB||!Object.values(tc).some(t=>t.s=='a'))if(!MOB)u.ang=Math.atan2(ms.y-innerHeight/2,ms.x-innerWidth/2);
+if(!MOB)u.ang=Math.atan2(ms.y-(innerHeight/2+(G.mode==='box'?(u.y-C)*Z:0)),ms.x-(innerWidth/2+(G.mode==='box'?(u.x-C)*Z:0)));
 const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}mv(u,ix*u.sp*dt,iy*u.sp*dt);if(fr){if(G.buildMode)build(u,u.ang);else if(G.T>(G.preventFireUntil||0))fire(u)}pick(u)}
 for(const p of G.P){if(!p.alive)continue;p.cd-=dt;p.fl-=dt;p.wc-=dt;if(p.use){p.use.t-=dt;if(p.use.t<=0){const k=p.use.k;if(k=='h'){p.med--;p.hp=Math.min(p.mh,p.hp+60)}else{p.shd--;p.sh=Math.min(100,p.sh+50)}for(let j=0;j<8;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*60,vy:-30-R()*40,l:.7,c:k=='h'?'#5be35b':'#4dc9ff',t:'+'});p.use=0;snd(520,.15,'triangle')}}if(p.rl>0){p.rl-=dt;if(p.rl<=0)p.guns[p.cur].a=GUNS[p.guns[p.cur].t].m}if(p.bot){ai(p,dt);pick(p)}
 if(Math.hypot(p.x-z.x,p.y-z.y)>z.r){p.hp-=(1+z.ph*1.5)*dt;if(p.hp<=0)kill(p,0)}}
