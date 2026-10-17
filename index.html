@@ -189,7 +189,7 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 <div id="modeSelect" aria-label="Choose a game mode">
 <button class="mode-card battle selected-mode" onclick="toggleModePicker()"><span class="mode-kicker">SELECTED MODE</span><strong id="selectedModeName">BATTLE ROYALE</strong><small id="selectedModeDesc">Drop in, gear up and be the last player standing.</small><em>CHANGE MODE <b>⌄</b></em></button>
 <div id="modePicker" class="mode-picker h" aria-label="Available game modes">
-<button class="mode-option active" id="optionBr" onclick="selectMode('br')"><b>BATTLE ROYALE</b><small>20 fighters · Solo survival</small><span>SELECTED</span></button>
+<button class="mode-option" id="optionBr" onclick="selectMode('br')"><b>BATTLE ROYALE</b><small>20 fighters · Solo survival</small><span>SELECT</span></button>
 <button class="mode-option" id="optionBox" onclick="selectMode('box')"><b>BOX FIGHTS</b><small>1v1 · First to 5 rounds</small><span>SELECT</span></button>
 </div>
 <button class="mode-play" onclick="play(selectedMode)">PLAY <span id="playModeName">BATTLE ROYALE</span><b>→</b></button>
@@ -285,7 +285,7 @@ for(let i=0;i<14&&OB.length<400;i++){const a=rnd()*7,d=rnd()*R0*.85,cx_=p[1]+Mat
 x.font='bold 28px "Arial Black",Impact,sans-serif';x.textAlign='center';x.lineWidth=6;x.lineJoin='round';x.strokeStyle='rgba(0,0,0,.75)';const ly=p[2]-R0-12;x.strokeText(p[0].toUpperCase(),p[1],ly);x.fillStyle='#fff';x.fillText(p[0].toUpperCase(),p[1],ly)}
 for(let i=0;i<30;i++){const[rx,ry]=rp(IR*.92);if(POI.some(p=>Math.hypot(p[1]-rx,p[2]-ry)<230)||ov(rx,ry,34,30,0))continue;OB.push({x:rx,y:ry,w:34,h:30});x.fillStyle='rgba(0,0,0,.3)';x.beginPath();x.ellipse(rx+21,ry+22,20,16,0,0,7);x.fill();x.fillStyle='#6b727d';x.beginPath();x.ellipse(rx+17,ry+15,19,16,0,0,7);x.fill();x.fillStyle='#8c949f';x.beginPath();x.ellipse(rx+14,ry+11,12,9,0,0,7);x.fill();x.strokeStyle='#40454d';x.lineWidth=2;x.beginPath();x.ellipse(rx+17,ry+15,19,16,0,0,7);x.stroke()}
 for(let i=0;i<190;i++){const[tx,ty]=rp(IR-20);if(POI.some(p=>Math.hypot(p[1]-tx,p[2]-ty)<(p[4]>7?300:225)))continue;const k=rnd()<.5;x.fillStyle='rgba(0,0,0,.25)';x.beginPath();x.ellipse(tx+7,ty+9,21,17,0,0,7);x.fill();x.fillStyle=k?'#1b4a24':'#245a2a';x.beginPath();x.arc(tx,ty,21,0,7);x.fill();x.fillStyle=k?'#2b6b33':'#34763a';x.beginPath();x.arc(tx-2,ty-2,16,0,7);x.fill();x.fillStyle=k?'#3e8a44':'#4a9a4a';x.beginPath();x.arc(tx-6,ty-6,8,0,7);x.fill()}}
-const hit=(x,y,r,ex)=>{for(const o of (G&&G.mode==='box'?BOX_OB:OB))if(x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)return 1;if(G&&G.W)for(const o of G.W)if(o.type!=='ramp'&&x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)return 1;return 0};
+const hit=(x,y,r,ex)=>{for(const o of (G&&G.mode==='box'?BOX_OB:OB))if(x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)return 1;if(G&&G.W)for(const o of G.W)if(x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)return 1;return 0};
 function los(a,b){const n=Math.hypot(b.x-a.x,b.y-a.y)/22|0;for(let i=1;i<n;i++)if(hit(a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n,0,a))return 0;return 1}
 // ---------- GAME ----------
 let G,cv=$('g'),cx=cv.getContext('2d'),mmx=$('mm').getContext('2d'),Z=1,cam={x:0,y:0},keys={},ms={x:0,y:0,d:0},tc={},MOB=matchMedia('(pointer:coarse)').matches,selectedMode='br';
