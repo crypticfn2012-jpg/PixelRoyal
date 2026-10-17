@@ -422,7 +422,7 @@ function setGameSetting(name,value){
  else if(name==='volume'){S.settings.volume=Math.max(0,Math.min(100,Number(value)||0));const o=$('volumeValue');if(o)o.textContent=S.settings.volume+'%'}
  else if(name==='resolution'){S.settings.resolution=['native','16:10','4:3'].includes(value)?value:'native'}
  else S.settings[name]=!!value;
- if(name==='sound')sndOn=!!S.settings.sound;
+ if(name==='sound'){sndOn=!!S.settings.sound;const button=$('mu');if(button)button.textContent=sndOn?'SOUND ON':'SOUND OFF'}
  save();
 }
 function resetGameSettings(){S.settings={...DEFAULT_GAME_SETTINGS,controls:{...DEFAULT_GAME_SETTINGS.controls}};sndOn=true;save();pn('settings')}
