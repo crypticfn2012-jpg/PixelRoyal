@@ -203,7 +203,12 @@ export class MyDurableObject extends DurableObject {
       if (!a.host) { send(ws, { type: "error", message: "Only the host can start this match." }); return; }
       const room = await this.ctx.storage.get("room:" + a.roomCode);
       if (!room || !MODES.has(room.mode)) { send(ws, { type: "error", message: "Could not start the match." }); return; }
-      for (const peer of this.roomSockets(a.roomCode)) send(peer, { type: "game_start", room: a.roomCode, mode: room.mode });
+      for (const peer of this.roomSockets(a.roomCode)) {
+        const peerData = attachment(peer);
+        peerData.mode = room.mode;
+        peer.serializeAttachment(peerData);
+        send(peer, { type: "game_start", room: a.roomCode, mode: room.mode });
+      }
       return;
     }
     if (!["state", "shots", "build"].includes(data?.type)) return;
