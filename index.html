@@ -1395,6 +1395,10 @@ function mpConnect(params) {
       mpLobbyPlayers = (packet.players || []).filter(function(p){return p.playerId && p.playerId !== mpClientId;}).map(function(p){return {id:p.playerId,name:"Player"};});
       mpRenderLobbyPlayers();
       mpSetLobbyStatus(mpLobbyPlayers.length ? "Your friend is here. Ready when you are." : "Waiting for your friend…");
+    } else if (packet.type === "host_changed") {
+      mpLobbyHost = packet.playerId === mpClientId;
+      mpShowLobby(mpLobbyHost);
+      mpSetLobbyStatus(mpLobbyHost ? "The previous host left. You're now the host." : "The host changed.");
     } else if (packet.type === "game_start") {
       mpStartGameFromLobby();
     } else if (packet.type === "player_left") {
