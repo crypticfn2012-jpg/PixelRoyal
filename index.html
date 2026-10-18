@@ -770,6 +770,15 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 #mpHostStart{width:100%;padding:13px;font-weight:900}
 #mpHostStart:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.4)}
 .mp-lobby-leave{width:100%;margin-top:8px;padding:11px}
+.mp-host-mode{display:flex;align-items:center;gap:12px;margin:12px 0;text-align:left}
+.mp-host-mode.h{display:none!important}
+.mp-host-mode label{flex:1;color:#91a6c2;font-size:10px;font-weight:900;letter-spacing:.12em}
+.mp-host-mode select{flex:1;min-width:0;background:#0a1321;color:#eef5ff;border:1px solid #405773;border-radius:8px;padding:10px;font:800 11px "Segoe UI",Arial,sans-serif}
+.mp-player-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid #253a52}
+.mp-player-row:first-child{border-top:0}
+.mp-kick{padding:5px 8px;border:1px solid #70414a;border-radius:7px;background:#351b25;color:#ffb6bd;font:900 9px "Segoe UI",Arial,sans-serif;cursor:pointer}
+.mp-kick:hover{background:#51232e}
+
 
 @media(max-height:760px){.mp-actions{gap:5px}.mp-primary,.mp-secondary{padding:8px}.mp-private-row{gap:4px}}
 </style>
@@ -808,6 +817,7 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
     <h2 id="mpLobbyTitle">ROOM LOBBY</h2>
     <p id="mpLobbyDescription">Invite a friend with this room code.</p>
     <div class="mp-lobby-code"><span>ROOM CODE</span><strong id="mpLobbyCode">------</strong><button class="mp-secondary" onclick="mpCopyRoomCode()">COPY</button></div>
+    <div id="mpHostModeRow" class="mp-host-mode h"><label for="mpLobbyMode">GAMEMODE</label><select id="mpLobbyMode" onchange="mpHostSetMode(this.value)"><option value="br">BATTLE ROYALE</option><option value="box">BOX FIGHTS</option></select></div>
     <div class="mp-lobby-players"><div><b>PLAYERS</b><span id="mpLobbyCount">1 connected</span></div><div id="mpLobbyPlayerList">You · Host<br>Waiting for players…</div></div>
     <p id="mpLobbyStatus" role="status">Connecting to room…</p>
     <button id="mpHostStart" class="mp-primary" onclick="mpHostStart()" disabled>START MATCH</button>
@@ -1309,19 +1319,52 @@ function mpShowLobby(isHost) {
   mpLobbyHost = !!isHost;
   $("mpLobbyCode").textContent = mpRoomCode || "------";
   $("mpHostStart").classList.toggle("h", !mpLobbyHost);
+  $("mpHostModeRow").classList.toggle("h", !mpLobbyHost);
+  $("mpLobbyMode").value = mpMode;
   $("mpHostStart").disabled = true;
   $("mpLobbyTitle").textContent = mpLobbyHost ? "ROOM LOBBY" : "JOINED LOBBY";
-  $("mpLobbyDescription").textContent = mpLobbyHost ? "Invite a friend, then start when everyone is ready." : "You're in the lobby. The host will start the match.";
+  $("mpLobbyDescription").textContent = mpLobbyHost ? "Choose the mode, invite your friends, then start the match." : "You're in the lobby. The host controls the mode and start.";
   $("mpLobby").classList.remove("h");
   mpRenderLobbyPlayers();
 }
 function mpRenderLobbyPlayers() {
   const count = Math.max(1, mpLobbyPlayers.length + 1);
-  $("mpLobbyCount").textContent = count + (count === 1 ? " connected" : " connected");
-  const names = ["You" + (mpLobbyHost ? " · Host" : "")];
-  mpLobbyPlayers.forEach(function(p){ names.push(p.name || "Player"); });
-  $("mpLobbyPlayerList").innerHTML = names.map(function(n){return "<div>"+n.replace(/[&<>"]/g,function(ch){return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[ch]})+"</div>"}).join("");
-  if (mpLobbyHost) $("mpHostStart").disabled = mpLobbyPlayers.length < 1;
+  $("mpLobbyCount").textContent = count + " connected";
+  const list = $("mpLobbyPlayerList");
+  list.replaceChildren();
+  const self = document.createElement("div");
+  self.className = "mp-player-row";
+  self.textContent = "You" + (mpLobbyHost ? " · Host" : "");
+  list.appendChild(self);
+  mpLobbyPlayers.forEach(function(p) {
+    const row = document.createElement("div");
+    row.className = "mp-player-row";
+    const name = document.createElement("span");
+    name.textContent = p.name || "Player";
+    row.appendChild(name);
+    if (mpLobbyHost && p.id) {
+      const kick = document.createElement("button");
+      kick.className = "mp-kick";
+      kick.type = "button";
+      kick.textContent = "KICK";
+      kick.setAttribute("aria-label", "Kick player");
+      kick.onclick = function(){ mpKickPlayer(p.id); };
+      row.appendChild(kick);
+    }
+    list.appendChild(row);
+  });
+  if (mpLobbyHost) $("mpHostStart").disabled = mpLobbyPlayers.length < 1 || !mpSocket || mpSocket.readyState !== WebSocket.OPEN;
+}
+function mpHostSetMode(mode) {
+  if (!mpLobbyHost || (mode !== "br" && mode !== "box")) return;
+  mpMode = mode;
+  mpSend({type:"set_mode", mode:mode});
+  mpSetLobbyStatus("Gamemode updated to " + (mode === "box" ? "Box Fights" : "Battle Royale") + ".");
+}
+function mpKickPlayer(playerId) {
+  if (!mpLobbyHost || !playerId) return;
+  mpSend({type:"kick_player", playerId:playerId});
+  mpSetLobbyStatus("Kicking player…");
 }
 function mpSetLobbyStatus(message) { const el = $("mpLobbyStatus"); if (el) el.textContent = message; }
 function mpCopyRoomCode() {
@@ -1399,6 +1442,16 @@ function mpConnect(params) {
       mpLobbyHost = packet.playerId === mpClientId;
       mpShowLobby(mpLobbyHost);
       mpSetLobbyStatus(mpLobbyHost ? "The previous host left. You're now the host." : "The host changed.");
+    } else if (packet.type === "lobby_mode") {
+      mpMode = packet.mode === "box" ? "box" : "br";
+      $("mpLobbyMode").value = mpMode;
+      mpSetLobbyStatus("Host selected " + (mpMode === "box" ? "Box Fights" : "Battle Royale") + ".");
+    } else if (packet.type === "kicked") {
+      mpSetLobbyStatus(packet.message || "You were removed from this party.");
+      mpDisconnect();
+      mpPrivate = false;
+      mpLobbyPlayers = [];
+      setTimeout(function(){ $("mpLobby").classList.add("h"); $("mn").classList.remove("h"); $("hud").classList.add("h"); }, 900);
     } else if (packet.type === "game_start") {
       mpStartGameFromLobby();
     } else if (packet.type === "player_left") {
