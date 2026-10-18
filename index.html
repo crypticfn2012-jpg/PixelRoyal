@@ -742,7 +742,19 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 #mn>.row #brw .menu-icon{display:block!important;visibility:visible!important;opacity:1!important;width:30px;height:30px;min-width:30px;max-width:30px;object-fit:contain;flex:none}
 @media(max-width:760px){#mn>.row #brw .menu-icon{width:24px;height:24px;min-width:24px;max-width:24px}}
 @media(max-width:430px){#mn>.row #brw .menu-icon{width:21px;height:21px;min-width:21px;max-width:21px}}
-</style></head><body>
+</style><style>
+.mp-actions{width:min(360px,88vw);display:flex;flex-direction:column;gap:7px;margin-top:2px}
+.mp-primary,.mp-secondary{border:1px solid #45617e;border-radius:9px;font:900 11px Inter,"Segoe UI",Arial,sans-serif;letter-spacing:.08em;padding:10px 11px;cursor:pointer}
+.mp-primary{background:linear-gradient(180deg,#5be0ce,#2bb5a5);color:#06221f;border-color:#8ff3e5;box-shadow:0 3px 0 #11655c}
+.mp-secondary{background:#17243a;color:#e9f1fc}
+.mp-primary:hover,.mp-secondary:hover{filter:brightness(1.1)}
+.mp-private-row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
+#mpRoomCode{min-width:0;width:100%;border:1px solid #3b526d;border-radius:8px;background:#0a1321;color:#fff;text-align:center;padding:8px 4px;font:900 12px monospace;letter-spacing:.16em;text-transform:uppercase}
+#mpStatus{color:#9eafc8;font-size:9px;line-height:1.35;text-align:center;min-height:22px}
+#mpHudStatus{position:fixed;z-index:12;top:48px;left:50%;transform:translateX(-50%);max-width:90vw;padding:6px 10px;border:1px solid #3d526d;border-radius:8px;background:#0b1420e8;color:#cfe5f3;font:800 10px Inter,"Segoe UI",Arial,sans-serif;letter-spacing:.04em;text-align:center;pointer-events:none;display:none}
+@media(max-height:760px){.mp-actions{gap:5px}.mp-primary,.mp-secondary{padding:8px}.mp-private-row{gap:4px}}
+</style>
+</head><body>
 <canvas id="g"></canvas>
 <div id="boot" aria-label="Loading Pixel Royale.io"><div class="boot-inner">
 <svg class="boot-logo" viewBox="0 0 500 330" role="img" aria-label="PixelForge Studios">
@@ -760,6 +772,15 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 <button class="mode-option" id="optionBox" onclick="selectMode('box')"><img src="BoxFights.jpg" alt="" /><b>BOX FIGHTS</b><small>1v1 · First to 5 rounds</small><span>SELECT</span></button>
 </div>
 <button class="mode-play" onclick="play(selectedMode)">PLAY <span id="playModeName">CHOOSE MODE</span><b>→</b></button>
+<div class="mp-actions">
+  <button class="mp-primary" onclick="startOnline(selectedMode||'br')">FIND ONLINE MATCH</button>
+  <div class="mp-private-row">
+    <button class="mp-secondary" onclick="createPrivateRoom()">CREATE ROOM</button>
+    <input id="mpRoomCode" maxlength="6" autocomplete="off" spellcheck="false" placeholder="ROOM CODE" aria-label="Private room code">
+    <button class="mp-secondary" onclick="joinPrivateRoom()">JOIN</button>
+  </div>
+  <small id="mpStatus">Online matches use bots while matchmaking. Private rooms need a room code.</small>
+</div>
 </div>
 <div class="row"><button class="b g menu-nav" onclick="pn('shop')" aria-label="Shop"><img class="menu-icon" src="Shop.png" alt=""> <span>SHOP</span></button><button class="b g menu-nav" onclick="pn('up')" aria-label="Upgrades"><img class="menu-icon" src="Upgrades.png" alt=""> <span>UPGRADES</span></button><button class="b g menu-nav" id="brw" onclick="pn('rw')" aria-label="Rewards"><img class="menu-icon" src="./Rewards.png?v=3" alt="" width="30" height="30" loading="eager" decoding="sync"> <span class="menu-label">REWARDS</span></button><button class="b g menu-nav" onclick="pn('st')" aria-label="Stats"><img class="menu-icon" src="Stats.png" alt=""> <span>STATS</span></button><button class="b g menu-nav" onclick="pn('settings')" aria-label="Settings"><img class="menu-icon" src="Settings.png" alt=""> <span>SETTINGS</span></button></div>
 <small class="hint" id="menuHint">WASD move · Mouse aim &amp; shoot · F build wall · E edit wall · H medkit · J shield · 1–3 swap · ESC pause<br>Pick a mode above and jump into the fight.</small></div>
@@ -924,7 +945,7 @@ if(G.mode==='box'){if(!G.box||G.box.roundEndedAt!=null)return;G.box.roundWinner=
 for(const g of p.guns)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'g',t:g.t,r:g.r||0,ok:0,dropped:true,droppedAt:G.T});for(let i=0;i<p.med;i++)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'h',ok:0,dropped:true,droppedAt:G.T});for(let i=0;i<p.shd;i++)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'s',ok:0,dropped:true,droppedAt:G.T});for(let i=0;i<p.chug;i++)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'j',ok:0,dropped:true,droppedAt:G.T});
 G.alive=G.P.filter(q=>q.alive).length;snd(120,.25,'sawtooth',.06);if(p===G.u)G.dead=G.T,G.place=G.alive+1;if(G.alive<=1&&!G.over){G.fin=G.T}}
 function fire(p,altFire=false){const g=p.guns[p.cur];if(!g||p.cd>0||p.rl>0)return;const base=GUNS[g.t],altFirePulse=g.t===5&&altFire,w=altFirePulse?{...base,d:34,r:.58,s:900,sp:.045,p:1}:base;if(g.a<=0)return rld(p);const tier=TIERS[g.r||0]||TIERS[0];g.a--;p.cd=w.r;p.use=0;if(G.fx.length<300)G.fx.push({x:p.x+Math.cos(p.ang)*28,y:p.y+Math.sin(p.ang)*28,vx:0,vy:0,l:.06,c:'#ffe9a0',r:8});if(w.selfKnock)mv(p,-Math.cos(p.ang)*w.selfKnock,-Math.sin(p.ang)*w.selfKnock);
-for(let i=0;i<w.p;i++){const a=p.ang+(R()-.5)*2*(w.sp+p.err);G.bl.push({x:p.x+Math.cos(p.ang)*20,y:p.y+Math.sin(p.ang)*20,vx:Math.cos(a)*w.s,vy:Math.sin(a)*w.s,l:w.rg/w.s,d:w.d*tier.mult*p.dm,o:p,c:p===G.u?tcol(w.c):w.c,knock:w.knock||0})}
+const mpShots=[];for(let i=0;i<w.p;i++){const a=p.ang+(R()-.5)*2*(w.sp+p.err);const shot={x:p.x+Math.cos(p.ang)*20,y:p.y+Math.sin(p.ang)*20,vx:Math.cos(a)*w.s,vy:Math.sin(a)*w.s,l:w.rg/w.s,d:w.d*tier.mult*p.dm,o:p,c:p===G.u?tcol(w.c):w.c,knock:w.knock||0};G.bl.push(shot);mpShots.push({x:shot.x,y:shot.y,vx:shot.vx,vy:shot.vy,l:shot.l,d:shot.d,c:shot.c,knock:shot.knock||0})}if(p===G.u&&mpOnline)mpSend({type:"shots",shots:mpShots});
 if(p===G.u||Math.hypot(p.x-G.u.x,p.y-G.u.y)<500)snd(w.p>1?90:w.d>50?60:220,.07,'sawtooth',p===G.u?.05:.02);if(g.a<=0)rld(p)}
 function rld(p){const g=p.guns[p.cur];if(p.rl>0||g.a>=GUNS[g.t].m)return;p.rl=GUNS[g.t].rl}
 function swap(p,i){if(i<0||i>=p.guns.length||i==p.cur)return;p.cur=i;p.rl=0}
@@ -1153,4 +1174,236 @@ loadS();
 S.own=SK.map((_,i)=>i==0||S.own[i]?1:0);S.oh=HT.map((_,i)=>i==0||S.oh[i]?1:0);S.ot=TR.map((_,i)=>i==0||S.ot[i]?1:0);setInterval(()=>{if(!document.hidden){S.play++;if(S.play%20==0)save();ui()}},1000);try{if(sdkReady&&CG&&CG.user&&typeof CG.user.getUser==='function'){user=await CG.user.getUser();if(typeof CG.user.addAuthListener==='function')CG.user.addAuthListener(u=>{user=u||null;loadS();save();ui()})}}catch(e){}
 buildMap();buildBoxArena();while(performance.now()-t0<2400)await new Promise(r=>setTimeout(r,50));clearInterval(iv);bar.style.width='100%';caption.textContent='Ready to drop';await new Promise(r=>setTimeout(r,250));
 try{if(sdkReady&&CG&&CG.game&&typeof CG.game.loadingStop==='function')CG.game.loadingStop()}catch(e){}$('boot').classList.add('done');$('mn').classList.remove('h');ui();requestAnimationFrame(mloop)})();
+
+/* ---------- ONLINE MULTIPLAYER ---------- */
+/* Replace this URL with the workers.dev URL printed by: npx wrangler deploy */
+const MP_WORKER_URL = "https://YOUR-WORKER-SUBDOMAIN.workers.dev";
+let mpSocket = null, mpClientId = "", mpRoomCode = "", mpMode = "br", mpRemote = null, mpOnline = false, mpPrivate = false, mpHudStatus = null;
+function mpSetStatus(message) {
+  const menuStatus = $("mpStatus");
+  if (menuStatus) menuStatus.textContent = message;
+  if (!mpHudStatus) {
+    mpHudStatus = document.createElement("div");
+    mpHudStatus.id = "mpHudStatus";
+    document.body.appendChild(mpHudStatus);
+  }
+  mpHudStatus.textContent = message;
+  mpHudStatus.style.display = G && G.run ? "block" : "none";
+}
+function mpUrl(path) {
+  const base = new URL(MP_WORKER_URL);
+  base.protocol = base.protocol === "http:" ? "ws:" : "wss:";
+  base.pathname = path;
+  base.search = "";
+  base.hash = "";
+  return base;
+}
+function mpSend(packet) {
+  if (mpSocket && mpSocket.readyState === WebSocket.OPEN) {
+    try { mpSocket.send(JSON.stringify(packet)); } catch (_) {}
+  }
+}
+function mpDisconnect() {
+  if (mpSocket) {
+    try { mpSocket.close(); } catch (_) {}
+  }
+  mpSocket = null;
+  mpOnline = false;
+  mpRemote = null;
+}
+function startOnline(mode) {
+  mpDisconnect();
+  mpMode = mode === "box" ? "box" : "br";
+  mpPrivate = false;
+  mpRoomCode = "";
+  mpOnline = true;
+  play(mpMode);
+  if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
+    mpSetStatus("Game started with bots. Deploy the Cloudflare Worker, then set MP_WORKER_URL in index.html.");
+    return;
+  }
+  mpConnect({ mode: mpMode });
+  mpSetStatus("Searching for a player · bots are active until someone joins.");
+}
+async function createPrivateRoom() {
+  if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
+    mpSetStatus("Deploy the Cloudflare Worker first, then set MP_WORKER_URL in index.html.");
+    return;
+  }
+  const mode = selectedMode === "box" ? "box" : "br";
+  mpSetStatus("Creating private room…");
+  try {
+    const response = await fetch(new URL("/api/rooms", MP_WORKER_URL), {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.code) throw new Error(result.error || "Could not create room.");
+    $("mpRoomCode").value = result.code;
+    mpStartPrivate(result.code, mode);
+  } catch (error) {
+    mpSetStatus("Room creation failed: " + (error.message || "check Worker URL and deployment."));
+  }
+}
+function joinPrivateRoom() {
+  const roomCode = ($("mpRoomCode").value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (roomCode.length !== 6) { mpSetStatus("Enter the 6-character room code first."); return; }
+  if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
+    mpSetStatus("Deploy the Cloudflare Worker first, then set MP_WORKER_URL in index.html.");
+    return;
+  }
+  mpDisconnect();
+  mpStartPrivate(roomCode, selectedMode === "box" ? "box" : "br");
+}
+function mpStartPrivate(roomCode, mode) {
+  mpDisconnect();
+  mpPrivate = true;
+  mpOnline = true;
+  mpMode = mode;
+  mpRoomCode = roomCode;
+  play(mode);
+  mpConnect({ room: roomCode });
+  mpSetStatus("Private room " + roomCode + " · share the code with your friend.");
+}
+function mpConnect(params) {
+  let url;
+  try {
+    url = mpUrl("/ws");
+    Object.keys(params).forEach(function (key) { url.searchParams.set(key, params[key]); });
+    mpSocket = new WebSocket(url.toString());
+  } catch (error) {
+    mpSetStatus("Could not connect to multiplayer server. Check MP_WORKER_URL.");
+    return;
+  }
+  mpSocket.onopen = function () {
+    mpSetStatus(mpPrivate ? ("Connected to room " + mpRoomCode + " · waiting for your friend.") : "Connected · searching for an opponent. Bots remain active.");
+  };
+  mpSocket.onmessage = function (event) {
+    let packet;
+    try { packet = JSON.parse(event.data); } catch (_) { return; }
+    if (packet.type === "queue_waiting") {
+      mpClientId = packet.playerId || mpClientId;
+      mpSetStatus("Searching for an opponent · bots are active.");
+    } else if (packet.type === "match_found") {
+      mpClientId = packet.playerId || mpClientId;
+      mpRoomCode = packet.room || "";
+      mpEnsureRemote(packet.opponentId, "Player");
+      mpSetStatus("Opponent found · live multiplayer connected.");
+    } else if (packet.type === "room_joined") {
+      mpClientId = packet.playerId || mpClientId;
+      mpRoomCode = packet.room || mpRoomCode;
+      (packet.players || []).forEach(function (p) {
+        if (p.playerId && p.playerId !== mpClientId) mpEnsureRemote(p.playerId, "Player");
+      });
+      mpSetStatus("Connected to private room " + mpRoomCode + ".");
+    } else if (packet.type === "player_joined") {
+      if (packet.playerId && packet.playerId !== mpClientId) mpEnsureRemote(packet.playerId, "Player");
+      mpSetStatus("A player joined room " + mpRoomCode + ".");
+    } else if (packet.type === "player_left") {
+      if (mpRemote && packet.playerId === mpRemote.mpId) {
+        mpRemote.bot = 1;
+        mpRemote.n = NM[R() * NM.length | 0];
+        mpRemote.mpId = "";
+        mpSetStatus("Opponent disconnected · a bot has taken over.");
+      }
+    } else if (packet.type === "state") {
+      if (packet.from && packet.from !== mpClientId) mpApplyRemoteState(packet.from, packet.state);
+    } else if (packet.type === "shots") {
+      if (packet.from && packet.from !== mpClientId && G && G.run && Array.isArray(packet.shots)) {
+        const remote = mpEnsureRemote(packet.from, "Player");
+        packet.shots.slice(0, 12).forEach(function (shot) {
+          if (!shot || !Number.isFinite(shot.x) || !Number.isFinite(shot.y) || !Number.isFinite(shot.vx) || !Number.isFinite(shot.vy)) return;
+          G.bl.push({ x: shot.x, y: shot.y, vx: shot.vx, vy: shot.vy, l: Math.max(0.01, Math.min(3, shot.l || 0.5)), d: Math.max(0, Math.min(150, shot.d || 0)), o: remote, c: shot.c || "#fff", knock: Math.max(0, Math.min(150, shot.knock || 0)) });
+        });
+      }
+    } else if (packet.type === "error") {
+      mpSetStatus(packet.message || "Multiplayer server error.");
+    }
+  };
+  mpSocket.onerror = function () {
+    mpSetStatus("Multiplayer connection failed. Check that the Worker is deployed and MP_WORKER_URL is correct.");
+  };
+  mpSocket.onclose = function () {
+    if (mpOnline && G && G.run) mpSetStatus("Disconnected from server · bots remain active.");
+    if (mpRemote) { mpRemote.bot = 1; mpRemote.n = NM[R() * NM.length | 0]; mpRemote.mpId = ""; }
+  };
+}
+function mpEnsureRemote(id, name) {
+  if (!G || !G.P || !G.u || !id || id === mpClientId) return null;
+  if (mpRemote && mpRemote.mpId === id) return mpRemote;
+  if (mpRemote && mpRemote.mpId && mpRemote.mpId !== id) mpRemote.alive = 0;
+  if (G.mode === "box") {
+    const old = G.P.find(function (p) { return p !== G.u && p.bot; });
+    if (old) G.P.splice(G.P.indexOf(old), 1);
+  } else {
+    for (let i = G.P.length - 1; i >= 0; i--) {
+      if (G.P[i] !== G.u && G.P[i].bot) { G.P.splice(i, 1); break; }
+    }
+  }
+  const angle = R() * Math.PI * 2;
+  const x = G.mode === "box" ? C + 475 : C + Math.cos(angle) * Math.min(IR - 80, 360);
+  const y = G.mode === "box" ? C : C + Math.sin(angle) * Math.min(IR - 80, 360);
+  const remote = mk(name || "Player", 0, x, y, PC[2]);
+  remote.mpId = id;
+  remote.mh = remote.hp = 100;
+  remote.sh = 0;
+  remote.sp = 150;
+  remote.ang = Math.PI;
+  remote.guns = [{ t: 0, a: 12, r: 0 }];
+  remote.cur = 0;
+  remote.k = 0;
+  remote.bot = 0;
+  G.P.push(remote);
+  mpRemote = remote;
+  G.alive = G.P.filter(function (p) { return p.alive; }).length;
+  return remote;
+}
+function mpApplyRemoteState(id, state) {
+  if (!state || !G || !G.run) return;
+  const remote = mpEnsureRemote(id, "Player");
+  if (!remote) return;
+  if (state.alive === 0 || state.alive === false) {
+    if (remote.alive) kill(remote, null);
+    return;
+  }
+  remote.x = Number.isFinite(state.x) ? state.x : remote.x;
+  remote.y = Number.isFinite(state.y) ? state.y : remote.y;
+  remote.ang = Number.isFinite(state.ang) ? state.ang : remote.ang;
+  remote.hp = Math.max(0, Math.min(200, Number(state.hp) || 0));
+  remote.mh = Math.max(1, Math.min(200, Number(state.mh) || 100));
+  remote.sh = Math.max(0, Math.min(100, Number(state.sh) || 0));
+  remote.c = typeof state.c === "string" ? state.c.slice(0, 24) : remote.c;
+  remote.hat = Number.isFinite(state.hat) ? state.hat : 0;
+  remote.k = Math.max(0, Number(state.k) || 0);
+  remote.sp = Math.max(80, Math.min(240, Number(state.sp) || 150));
+  remote.med = Math.max(0, Math.min(5, Number(state.med) || 0));
+  remote.shd = Math.max(0, Math.min(5, Number(state.shd) || 0));
+  remote.chug = Math.max(0, Math.min(2, Number(state.chug) || 0));
+  if (Array.isArray(state.guns) && state.guns.length) {
+    remote.guns = state.guns.slice(0, 3).filter(function (g) { return g && Number.isInteger(g.t) && g.t >= 0 && g.t < GUNS.length; }).map(function (g) {
+      return { t: g.t, a: Math.max(0, Math.min(GUNS[g.t].m, Number(g.a) || 0)), r: Math.max(0, Math.min(4, Number(g.r) || 0)) };
+    });
+    if (!remote.guns.length) remote.guns = [{ t: 0, a: 12, r: 0 }];
+    remote.cur = Math.max(0, Math.min(remote.guns.length - 1, Number(state.cur) || 0));
+  }
+  if (Array.isArray(state.walls)) {
+    G.W = G.W.filter(function (wall) { return wall.o !== remote; });
+    state.walls.slice(0, 8).forEach(function (wall) {
+      if (![wall.x, wall.y, wall.w, wall.h].every(Number.isFinite)) return;
+      G.W.push({ x: wall.x, y: wall.y, w: wall.w, h: wall.h, hp: Math.max(0, Math.min(250, Number(wall.hp) || 0)), maxHp: 250, type: "wall", ang: Number(wall.ang) || 0, o: remote });
+    });
+  }
+}
+function mpSendState() {
+  if (!mpOnline || !mpSocket || mpSocket.readyState !== WebSocket.OPEN || !G || !G.run || !G.u) return;
+  const p = G.u;
+  const state = {
+    x: p.x, y: p.y, ang: p.ang, hp: p.hp, mh: p.mh, sh: p.sh, alive: p.alive ? 1 : 0,
+    c: p.c, hat: p.hat || 0, k: p.k || 0, sp: p.sp, med: p.med || 0, shd: p.shd || 0, chug: p.chug || 0,
+    cur: p.cur || 0, guns: (p.guns || []).map(function (g) { return { t: g.t, a: g.a, r: g.r || 0 }; }),
+    walls: G.W.filter(function (w) { return w.o === p; }).slice(-8).map(function (w) { return { x: w.x, y: w.y, w: w.w, h: w.h, hp: w.hp, ang: w.ang || 0 }; })
+  };
+  mpSend({ type: "state", state: state });
+}
+setInterval(mpSendState, 100);
+
 </script></body></html>
