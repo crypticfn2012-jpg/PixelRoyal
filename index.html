@@ -938,8 +938,9 @@ for(const [x,c] of [[l+90,'#55d6c2'],[l+w-90,'#ffbd67']]){a.strokeStyle=c;a.line
 a.fillStyle='#916b43';a.fillRect(l-18,t-18,w+36,18);a.fillRect(l-18,t+h,w+36,18);a.fillRect(l-18,t,18,h);a.fillRect(l+w,t,18,h);a.strokeStyle='#d9b17c';a.lineWidth=2;a.strokeRect(l-18,t-18,w+36,h+36);
 BOX_OB=[{x:l-18,y:t-18,w:18,h:h+36},{x:l+w,y:t-18,w:18,h:h+36},{x:l-18,y:t-18,w:w+36,h:18},{x:l-18,y:t+h,w:w+36,h:18}];}
 function startBoxRound(){const bx=G.box;bx.transitioning=false;bx.roundEndedAt=null;bx.roundWinner='';G.W=[];G.L=[];G.bl=[];G.fx=[];G.feed=[];G.dead=0;G.fin=0;G.buildMode=false;G.edit=null;G.preventFireUntil=G.T+.65;
-const skill=matchSkill();const u=mk('You',0,C-475,C,SK[S.skin][1]);u.c=SK[S.skin][1];u.hat=S.hat;u.ang=0;u.mh=u.hp=100;u.sh=100;u.shd=0;u.med=0;u.chug=0;u.sp=178;u.buildPiece='wall';u.dm=1;u.err=0;u.guns=[{t:5,a:GUNS[5].m,r:1},{t:2,a:GUNS[2].m,r:0}];u.cur=0;
-const b=mk(bx.botName,1,C+475,C,PC[2]);b.ang=Math.PI;b.mh=b.hp=100;b.sh=100;b.shd=0;b.med=0;b.chug=0;b.sp=Math.max(132,Math.min(165,146+skill*2+(R()-.5)*12));b.dm=Math.max(.4,Math.min(.76,.58+skill*.035+(R()-.5)*.12));b.err=Math.max(.07,Math.min(.24,.11-skill*.018+(R()-.5)*.05));b.buildPiece='wall';b.guns=[{t:5,a:GUNS[5].m,r:1},{t:2,a:GUNS[2].m,r:0}];b.cur=0;b.bc=0;b.botStrafe=R()<.5?-1:1;b.boxAimOffset=0;b.boxAimTimer=.1;b.boxBuildAt=G.T+.65+R()*.55;
+const localLeft=mpOnline?(mpPrivate?!!mpLobbyHost:(!mpOpponentId||mpClientId<mpOpponentId)):true;const userX=C+(localLeft?-475:475);const botX=C+(localLeft?475:-475);
+const skill=matchSkill();const u=mk('You',0,userX,C,SK[S.skin][1]);u.c=SK[S.skin][1];u.hat=S.hat;u.ang=localLeft?0:Math.PI;u.mh=u.hp=100;u.sh=100;u.shd=0;u.med=0;u.chug=0;u.sp=178;u.buildPiece='wall';u.dm=1;u.err=0;u.guns=[{t:5,a:GUNS[5].m,r:1},{t:2,a:GUNS[2].m,r:0}];u.cur=0;
+const b=mk(bx.botName,1,botX,C,PC[2]);b.ang=localLeft?Math.PI:0;b.mh=b.hp=100;b.sh=100;b.shd=0;b.med=0;b.chug=0;b.sp=Math.max(132,Math.min(165,146+skill*2+(R()-.5)*12));b.dm=Math.max(.4,Math.min(.76,.58+skill*.035+(R()-.5)*.12));b.err=Math.max(.07,Math.min(.24,.11-skill*.018+(R()-.5)*.05));b.buildPiece='wall';b.guns=[{t:5,a:GUNS[5].m,r:1},{t:2,a:GUNS[2].m,r:0}];b.cur=0;b.bc=0;b.botStrafe=R()<.5?-1:1;b.boxAimOffset=0;b.boxAimTimer=.1;b.boxBuildAt=G.T+.65+R()*.55;
 G.P=[u,b];G.u=u;G.alive=2;G.buildMode=false;G.buildPiece='wall';$('bw').textContent='BUILD';$('bt').textContent='EDIT';}
 function aiBox(b,dt){const p=G.u;if(!p||!p.alive||!b.alive)return;b.bc-=dt;const dx=p.x-b.x,dy=p.y-b.y,d=Math.max(1,Math.hypot(dx,dy)),targetA=Math.atan2(dy,dx);
 if(!b.use&&b.shd>0&&b.sh<35&&d>280&&G.T-(b.shieldAt??-999)>5){useI(b,'s');if(b.use)b.shieldAt=G.T}if(b.use)return;
@@ -959,7 +960,7 @@ if(chosen==='box'){startBoxRound();Z=Math.min(1,Math.min(innerWidth/1320,innerHe
 const botNames=NM.slice();for(let i=botNames.length-1;i>0;i--){const j=R()*(i+1)|0;[botNames[i],botNames[j]]=[botNames[j],botNames[i]]}
 const sl=[...Array(20).keys()].sort(()=>R()-.5),u=mk('You',0,0,0,SK[S.skin][1]);u.hat=S.hat;u.mh=u.hp=100+10*S.up[0];u.sp=170*(1+.04*S.up[1]);u.dm=1+.06*S.up[2];G.P.push(u);G.u=u;
 const skill=matchSkill();for(let i=0;i<19;i++){const b=mk(botNames[i],1,0,0,PC[i%8]);/* Adaptive difficulty is gentle, and each bot gets a different profile per match. */const style=R();b.err=Math.max(.075,Math.min(.38,.16+R()*.2-skill*.022+(style<.25?.055:style>.78?-.035:0)));b.dm=Math.max(.34,Math.min(.76,.50+skill*.035+(R()-.5)*.13));b.sp=Math.max(125,Math.min(170,142+R()*16+skill*2+(R()-.5)*9));b.th=R()*.22;b.hat=R()<.5?0:1+(R()*5|0);b.botStyle=style<.25?'aggressive':style<.55?'looter':style<.8?'cautious':'balanced';G.P.push(b)}
-G.P.forEach((p,i)=>{p.oa=sl[i]*6.2832/20+(R()-.5)*.08;[p.x,p.y]=ring(p.oa);p.lx=p.x;p.ly=p.y;p.ang=p.oa+3.14});
+let onlineSpawnAngle=0;if(mpOnline&&mpClientId){for(let i=0;i<mpClientId.length;i++)onlineSpawnAngle=(onlineSpawnAngle*31+mpClientId.charCodeAt(i))>>>0;onlineSpawnAngle=onlineSpawnAngle/4294967296*Math.PI*2}G.P.forEach((p,i)=>{p.oa=mpOnline?(onlineSpawnAngle+i*6.2832/20):sl[i]*6.2832/20+(R()-.5)*.08;[p.x,p.y]=ring(p.oa);p.lx=p.x;p.ly=p.y;p.ang=p.oa+3.14});
 for(const p of POI){const count=p[4]>7?4:2;for(let i=0;i<count;i++){const [x,y]=lootNear(p[1],p[2],p[4]>7?205:140,175);mkLoot(x,y,0)}}for(let i=0;i<24;i++){const[x,y]=lootSpot(190);mkLoot(x,y,0)}
 // Ensure the two new items are actually discoverable every match, not dependent on a lucky random roll.
 for(const k of ['g','g','j','j']){const [x,y]=lootSpot(110);G.L.push({x,y,k,t:k==='g'?6:undefined,r:k==='g'?tierRoll():0,ok:0,dropped:false,createdAt:G.T})}
@@ -1013,7 +1014,7 @@ if(b.unst>0){b.unst-=dt;const t=mvx;mvx=-mvy*b.sd;mvy=t*b.sd}
 mvx+=(b.sx||0)*.7;mvy+=(b.sy||0)*.7;const m=Math.hypot(mvx,mvy)||1;mv(b,mvx/m*b.sp*dt,mvy/m*b.sp*dt);
 const g=b.guns[b.cur];if(!b.tg&&g.a<GUNS[g.t].m*.5)rld(b)}
 function upd(dt){const u=G.u,z=G.z;G.T+=dt;for(let i=G.L.length-1;i>=0;i--){const l=G.L[i];if(l.dropped&&G.T-(l.droppedAt??G.T)>=10)G.L.splice(i,1)}if(!S.settings.particles&&G.fx.length)G.fx.length=0;
-if(u.alive){let ix=(keys.d||0)-(keys.a||0),iy=(keys.s||0)-(keys.w||0),fr=ms.d||touchFire;
+if(u.alive&&!G.paused){let ix=(keys.d||0)-(keys.a||0),iy=(keys.s||0)-(keys.w||0),fr=ms.d||touchFire;
 for(const t of Object.values(tc)){const dx=t.x-t.ox,dy=t.y-t.oy,d=Math.hypot(dx,dy);if(t.s==='m'){ix=dx/36;iy=dy/36;const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l}}else if(t.s==='a'&&d>7){u.ang=Math.atan2(dy,dx)}}
 if(!MOB){const ax=cam.x+ms.x/Z-u.x,ay=cam.y+ms.y/Z-u.y;/* Ignore the near-zero aim vector when the cursor crosses the player; it prevents rapid angle flips while moving. */if(ax*ax+ay*ay>144)u.ang=Math.atan2(ay,ax)}
 const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}mv(u,ix*u.sp*dt,iy*u.sp*dt);if(fr){if(G.buildMode)build(u,u.ang);else if(G.T>(G.preventFireUntil||0))fire(u,ms.b===2)}pick(u)}
@@ -1035,7 +1036,7 @@ $('x2').classList.remove('d');$('lg2').style.display=user||!(sdkReady&&CG&&CG.us
 $('x2').onclick=()=>ad('rewarded').then(ok=>{if(ok){S.coins+=G.c;save();$('x2').classList.add('d');$('ec').innerHTML+='<br>Doubled!'}});
 let last=0;function getRenderSize(){return{w:Math.max(1,Math.round(innerWidth)),h:Math.max(1,Math.round(innerHeight))}}
 let fpsWindowStart=0,fpsFrames=0,fpsLast=0;
-function loop(t){if(!G)return;const dt=Math.min(.05,(t-last)/1e3);last=t;if(G.run&&!G.paused){upd(dt)}if(S.settings.showFps){fpsFrames++;if(t-fpsWindowStart>=500){fpsLast=Math.round(fpsFrames*1000/Math.max(1,t-fpsWindowStart));fpsFrames=0;fpsWindowStart=t}$('fps').textContent='FPS: '+(fpsLast||'--');$('fps').classList.remove('h')}else $('fps').classList.add('h');draw();if(G.run)requestAnimationFrame(loop)}
+function loop(t){if(!G)return;const dt=Math.min(.05,(t-last)/1e3);last=t;if(G.run&&(!G.paused||mpOnline)){upd(dt)}if(S.settings.showFps){fpsFrames++;if(t-fpsWindowStart>=500){fpsLast=Math.round(fpsFrames*1000/Math.max(1,t-fpsWindowStart));fpsFrames=0;fpsWindowStart=t}$('fps').textContent='FPS: '+(fpsLast||'--');$('fps').classList.remove('h')}else $('fps').classList.add('h');draw();if(G.run)requestAnimationFrame(loop)}
 function drawWall(o,ghost=false,valid=true){
  cx.save();cx.globalAlpha=ghost?.38:1;
  cx.fillStyle='rgba(0,0,0,.25)';cx.fillRect(o.x+3,o.y+4,o.w,o.h);
@@ -1218,7 +1219,7 @@ try{if(sdkReady&&CG&&CG.game&&typeof CG.game.loadingStop==='function')CG.game.lo
 /* ---------- ONLINE MULTIPLAYER ---------- */
 /* Replace this URL with the workers.dev URL printed by: npx wrangler deploy */
 const MP_WORKER_URL = "https://pixelroyal-multiplayer.pixelroyal-21513.workers.dev";
-let mpSocket = null, mpClientId = "", mpRoomCode = "", mpMode = "br", mpRemote = null, mpOnline = false, mpPrivate = false, mpHudStatus = null;
+let mpSocket = null, mpClientId = "", mpOpponentId = "", mpRoomCode = "", mpMode = "br", mpRemote = null, mpOnline = false, mpPrivate = false, mpHudStatus = null;
 function mpSetStatus(message) {
   const menuStatus = $("mpStatus");
   if (menuStatus) menuStatus.textContent = message;
@@ -1422,11 +1423,13 @@ function mpConnect(params) {
       mpSetStatus("Searching for an opponent · bots are active.");
     } else if (packet.type === "match_found") {
       mpClientId = packet.playerId || mpClientId;
+      mpOpponentId = packet.opponentId || mpOpponentId;
       mpRoomCode = packet.room || "";
       mpEnsureRemote(packet.opponentId, "Player");
       mpSetStatus("Opponent found · live multiplayer connected.");
     } else if (packet.type === "room_joined") {
       mpClientId = packet.playerId || mpClientId;
+      mpOpponentId = (packet.players || []).map(function(p){return p.playerId;}).find(function(id){return id && id !== mpClientId;}) || mpOpponentId;
       mpRoomCode = packet.room || mpRoomCode;
       mpLobbyHost = !!packet.isHost;
       mpMode = packet.mode === "box" ? "box" : "br";
