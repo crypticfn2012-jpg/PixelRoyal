@@ -781,6 +781,11 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 
 
 @media(max-height:760px){.mp-actions{gap:5px}.mp-primary,.mp-secondary{padding:8px}.mp-private-row{gap:4px}}
+
+/* Use the uploaded Build icon on the in-game build control. The pseudo-element survives BUILD/BUILD ✓ text updates. */
+#bw{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+#bw::before{content:"";display:inline-block;flex:0 0 20px;width:20px;height:20px;background:url("Build.png") center/contain no-repeat;vertical-align:middle}
+@media(max-width:700px){#mb #bw::before{width:22px;height:22px;flex-basis:22px}}
 </style>
 </head><body>
 <canvas id="g"></canvas>
