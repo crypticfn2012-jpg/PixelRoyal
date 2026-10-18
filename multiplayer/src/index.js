@@ -172,9 +172,38 @@ export class MyDurableObject extends DurableObject {
     const a = attachment(ws);
     if (data?.type === "ping") { send(ws, { type: "pong", at: Date.now() }); return; }
     if (!a.roomCode || a.status !== "room") return;
+    if (data?.type === "set_mode") {
+      if (!a.host) { send(ws, { type: "error", message: "Only the host can change the gamemode." }); return; }
+      if (!MODES.has(data.mode)) { send(ws, { type: "error", message: "Invalid gamemode." }); return; }
+      const room = await this.ctx.storage.get("room:" + a.roomCode);
+      if (!room) { send(ws, { type: "error", message: "Room no longer exists." }); return; }
+      room.mode = data.mode;
+      await this.ctx.storage.put("room:" + a.roomCode, room);
+      for (const peer of this.roomSockets(a.roomCode)) {
+        const peerData = attachment(peer);
+        peerData.mode = data.mode;
+        peer.serializeAttachment(peerData);
+        send(peer, { type: "lobby_mode", mode: data.mode });
+      }
+      return;
+    }
+    if (data?.type === "kick_player") {
+      if (!a.host) { send(ws, { type: "error", message: "Only the host can kick players." }); return; }
+      const targetId = typeof data.playerId === "string" ? data.playerId : "";
+      const target = this.roomSockets(a.roomCode).find((peer) => {
+        const targetData = attachment(peer);
+        return targetData.clientId === targetId && targetData.clientId !== a.clientId;
+      });
+      if (!target) { send(ws, { type: "error", message: "That player is no longer in the room." }); return; }
+      send(target, { type: "kicked", message: "The host removed you from this party." });
+      try { target.close(4001, "Removed by host"); } catch (_) {}
+      return;
+    }
     if (data?.type === "start_game") {
       if (!a.host) { send(ws, { type: "error", message: "Only the host can start this match." }); return; }
-      for (const peer of this.roomSockets(a.roomCode)) send(peer, { type: "game_start", room: a.roomCode, mode: a.mode });
+      const room = await this.ctx.storage.get("room:" + a.roomCode);
+      if (!room || !MODES.has(room.mode)) { send(ws, { type: "error", message: "Could not start the match." }); return; }
+      for (const peer of this.roomSockets(a.roomCode)) send(peer, { type: "game_start", room: a.roomCode, mode: room.mode });
       return;
     }
     if (!["state", "shots", "build"].includes(data?.type)) return;
