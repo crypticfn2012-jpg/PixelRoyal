@@ -752,6 +752,25 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 #mpRoomCode{min-width:0;width:100%;border:1px solid #3b526d;border-radius:8px;background:#0a1321;color:#fff;text-align:center;padding:8px 4px;font:900 12px monospace;letter-spacing:.16em;text-transform:uppercase}
 #mpStatus{color:#9eafc8;font-size:9px;line-height:1.35;text-align:center;min-height:22px}
 #mpHudStatus{position:fixed;z-index:12;top:48px;left:50%;transform:translateX(-50%);max-width:90vw;padding:6px 10px;border:1px solid #3d526d;border-radius:8px;background:#0b1420e8;color:#cfe5f3;font:800 10px Inter,"Segoe UI",Arial,sans-serif;letter-spacing:.04em;text-align:center;pointer-events:none;display:none}
+.mp-lobby{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(3,8,15,.88);backdrop-filter:blur(12px)}
+.mp-lobby.h{display:none!important}
+.mp-lobby-card{width:min(420px,100%);padding:26px;border:1px solid #314762;border-radius:18px;background:linear-gradient(155deg,#142337,#080f1a 72%);box-shadow:0 24px 80px #0009;color:#eef5ff;text-align:center}
+.mp-lobby-kicker{font-size:10px;font-weight:900;letter-spacing:.2em;color:#79c4ff}
+.mp-lobby-card h2{margin:8px 0;font-size:25px;letter-spacing:.04em}
+.mp-lobby-card p{color:#aebed1;font-size:12px;line-height:1.5}
+.mp-lobby-code{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:18px 0;padding:13px;border:1px solid #314762;border-radius:12px;background:#080f1a}
+.mp-lobby-code span{grid-column:1/-1;text-align:left;color:#91a6c2;font-size:9px;font-weight:900;letter-spacing:.16em}
+.mp-lobby-code strong{font:900 26px monospace;letter-spacing:.17em;text-align:left}
+.mp-lobby-players{padding:14px;border:1px solid #253a52;border-radius:12px;text-align:left;background:#0b1523}
+.mp-lobby-players>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:11px}
+.mp-lobby-players>div:first-child b{letter-spacing:.1em}
+#mpLobbyCount{color:#9eafc8}
+#mpLobbyPlayerList{margin-top:10px;color:#c5d4e6;font-size:12px;line-height:1.8}
+#mpLobbyStatus{min-height:18px;margin:12px 0}
+#mpHostStart{width:100%;padding:13px;font-weight:900}
+#mpHostStart:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.4)}
+.mp-lobby-leave{width:100%;margin-top:8px;padding:11px}
+
 @media(max-height:760px){.mp-actions{gap:5px}.mp-primary,.mp-secondary{padding:8px}.mp-private-row{gap:4px}}
 </style>
 </head><body>
@@ -771,19 +790,30 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 <button class="mode-option" id="optionBr" onclick="selectMode('br')"><img src="BattleRoyal.jpg" alt="" /><b>BATTLE ROYALE</b><small>20 fighters · Solo survival</small><span>SELECT</span></button>
 <button class="mode-option" id="optionBox" onclick="selectMode('box')"><img src="BoxFights.jpg" alt="" /><b>BOX FIGHTS</b><small>1v1 · First to 5 rounds</small><span>SELECT</span></button>
 </div>
-<button class="mode-play" onclick="play(selectedMode)">PLAY <span id="playModeName">CHOOSE MODE</span><b>→</b></button>
+<button class="mode-play" onclick="startOnline(selectedMode||'br')">PLAY <span id="playModeName">CHOOSE MODE</span><b>→</b></button>
 <div class="mp-actions">
-  <button class="mp-primary" onclick="startOnline(selectedMode||'br')">FIND ONLINE MATCH</button>
   <div class="mp-private-row">
     <button class="mp-secondary" onclick="createPrivateRoom()">CREATE ROOM</button>
     <input id="mpRoomCode" maxlength="6" autocomplete="off" spellcheck="false" placeholder="ROOM CODE" aria-label="Private room code">
     <button class="mp-secondary" onclick="joinPrivateRoom()">JOIN</button>
   </div>
-  <small id="mpStatus">Online matches use bots while matchmaking. Private rooms need a room code.</small>
+  <small id="mpStatus">PLAY starts matchmaking. Create a room to invite friends and start together.</small>
 </div>
 </div>
 <div class="row"><button class="b g menu-nav" onclick="pn('shop')" aria-label="Shop"><img class="menu-icon" src="Shop.png" alt=""> <span>SHOP</span></button><button class="b g menu-nav" onclick="pn('up')" aria-label="Upgrades"><img class="menu-icon" src="Upgrades.png" alt=""> <span>UPGRADES</span></button><button class="b g menu-nav" id="brw" onclick="pn('rw')" aria-label="Rewards"><img class="menu-icon" src="./Rewards.png?v=3" alt="" width="30" height="30" loading="eager" decoding="sync"> <span class="menu-label">REWARDS</span></button><button class="b g menu-nav" onclick="pn('st')" aria-label="Stats"><img class="menu-icon" src="Stats.png" alt=""> <span>STATS</span></button><button class="b g menu-nav" onclick="pn('settings')" aria-label="Settings"><img class="menu-icon" src="Settings.png" alt=""> <span>SETTINGS</span></button></div>
 <small class="hint" id="menuHint">WASD move · Mouse aim &amp; shoot · F build wall · E edit wall · H medkit · J shield · 1–3 swap · ESC pause<br>Pick a mode above and jump into the fight.</small></div>
+<div id="mpLobby" class="mp-lobby h" role="dialog" aria-modal="true" aria-labelledby="mpLobbyTitle">
+  <div class="mp-lobby-card">
+    <div class="mp-lobby-kicker">PRIVATE MATCH</div>
+    <h2 id="mpLobbyTitle">ROOM LOBBY</h2>
+    <p id="mpLobbyDescription">Invite a friend with this room code.</p>
+    <div class="mp-lobby-code"><span>ROOM CODE</span><strong id="mpLobbyCode">------</strong><button class="mp-secondary" onclick="mpCopyRoomCode()">COPY</button></div>
+    <div class="mp-lobby-players"><div><b>PLAYERS</b><span id="mpLobbyCount">1 connected</span></div><div id="mpLobbyPlayerList">You · Host<br>Waiting for players…</div></div>
+    <p id="mpLobbyStatus" role="status">Connecting to room…</p>
+    <button id="mpHostStart" class="mp-primary" onclick="mpHostStart()" disabled>START MATCH</button>
+    <button class="mp-secondary mp-lobby-leave" onclick="mpLeaveLobby()">BACK TO MENU</button>
+  </div>
+</div>
 <div id="pl" class="s h" style="background:#000a"><div class="p" id="pc"></div><button class="b" onclick="cl()">CLOSE</button></div>
 <div id="hud" class="h"><div id="vg"></div><div id="dm"></div><div id="fps" class="h">FPS: --</div>
 <div id="tl"><div class="chip"><span>ALIVE</span><b id="al"></b></div><div class="chip"><span>ELIMS</span><b id="kl"></b></div></div><div id="zt"></div><div id="feed"></div><canvas id="mm" width="124" height="124"></canvas>
@@ -1218,16 +1248,12 @@ function startOnline(mode) {
   mpRoomCode = "";
   mpOnline = true;
   play(mpMode);
-  if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
-    mpSetStatus("Game started with bots. Deploy the Cloudflare Worker, then set MP_WORKER_URL in index.html.");
-    return;
-  }
   mpConnect({ mode: mpMode });
   mpSetStatus("Searching for a player · bots are active until someone joins.");
 }
 async function createPrivateRoom() {
   if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
-    mpSetStatus("Deploy the Cloudflare Worker first, then set MP_WORKER_URL in index.html.");
+    mpSetStatus("Multiplayer server is not configured yet.");
     return;
   }
   const mode = selectedMode === "box" ? "box" : "br";
@@ -1238,8 +1264,16 @@ async function createPrivateRoom() {
     });
     const result = await response.json();
     if (!response.ok || !result.code) throw new Error(result.error || "Could not create room.");
-    $("mpRoomCode").value = result.code;
-    mpStartPrivate(result.code, mode);
+    mpDisconnect();
+    mpPrivate = true;
+    mpOnline = true;
+    mpMode = mode;
+    mpRoomCode = result.code;
+    mpLobbyHost = true;
+    mpLobbyPlayers = [];
+    mpShowLobby(true);
+    mpConnect({ room: result.code });
+    mpSetLobbyStatus("Room created. Share the code and wait for your friend.");
   } catch (error) {
     mpSetStatus("Room creation failed: " + (error.message || "check Worker URL and deployment."));
   }
@@ -1248,7 +1282,7 @@ async function joinPrivateRoom() {
   const roomCode = ($("mpRoomCode").value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (roomCode.length !== 6) { mpSetStatus("Enter the 6-character room code first."); return; }
   if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
-    mpSetStatus("Deploy the Cloudflare Worker first, then set MP_WORKER_URL in index.html.");
+    mpSetStatus("Multiplayer server is not configured yet.");
     return;
   }
   try {
@@ -1256,20 +1290,66 @@ async function joinPrivateRoom() {
     const room = await response.json();
     if (!response.ok) throw new Error(room.error || "Room not found.");
     mpDisconnect();
-    mpStartPrivate(roomCode, room.mode === "box" ? "box" : "br");
+    mpPrivate = true;
+    mpOnline = true;
+    mpMode = room.mode === "box" ? "box" : "br";
+    mpRoomCode = roomCode;
+    mpLobbyHost = false;
+    mpLobbyPlayers = [];
+    mpShowLobby(false);
+    mpConnect({ room: roomCode });
+    mpSetLobbyStatus("Joining room…");
   } catch (error) {
     mpSetStatus("Could not join room: " + (error.message || "check the code and Worker URL."));
   }
 }
-function mpStartPrivate(roomCode, mode) {
+let mpLobbyHost = false;
+let mpLobbyPlayers = [];
+function mpShowLobby(isHost) {
+  mpLobbyHost = !!isHost;
+  $("mpLobbyCode").textContent = mpRoomCode || "------";
+  $("mpHostStart").classList.toggle("h", !mpLobbyHost);
+  $("mpHostStart").disabled = true;
+  $("mpLobbyTitle").textContent = mpLobbyHost ? "ROOM LOBBY" : "JOINED LOBBY";
+  $("mpLobbyDescription").textContent = mpLobbyHost ? "Invite a friend, then start when everyone is ready." : "You're in the lobby. The host will start the match.";
+  $("mpLobby").classList.remove("h");
+  mpRenderLobbyPlayers();
+}
+function mpRenderLobbyPlayers() {
+  const count = Math.max(1, mpLobbyPlayers.length + 1);
+  $("mpLobbyCount").textContent = count + (count === 1 ? " connected" : " connected");
+  const names = ["You" + (mpLobbyHost ? " · Host" : "")];
+  mpLobbyPlayers.forEach(function(p){ names.push(p.name || "Player"); });
+  $("mpLobbyPlayerList").innerHTML = names.map(function(n){return "<div>"+n.replace(/[&<>"]/g,function(ch){return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[ch]})+"</div>"}).join("");
+  if (mpLobbyHost) $("mpHostStart").disabled = mpLobbyPlayers.length < 1;
+}
+function mpSetLobbyStatus(message) { const el = $("mpLobbyStatus"); if (el) el.textContent = message; }
+function mpCopyRoomCode() {
+  if (!mpRoomCode) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(mpRoomCode).then(function(){mpSetLobbyStatus("Room code copied.");}).catch(function(){mpSetLobbyStatus("Your room code is " + mpRoomCode);});
+  else mpSetLobbyStatus("Your room code is " + mpRoomCode);
+}
+function mpHostStart() {
+  if (!mpLobbyHost || !mpLobbyPlayers.length || !mpSocket || mpSocket.readyState !== WebSocket.OPEN) return;
+  $("mpHostStart").disabled = true;
+  mpSetLobbyStatus("Starting match…");
+  mpSend({type:"start_game"});
+}
+function mpStartGameFromLobby() {
+  $("mpLobby").classList.add("h");
+  mpSetStatus("Match started · live multiplayer connected.");
+  play(mpMode);
+}
+function mpLeaveLobby() {
   mpDisconnect();
-  mpPrivate = true;
-  mpOnline = true;
-  mpMode = mode;
-  mpRoomCode = roomCode;
-  play(mode);
-  mpConnect({ room: roomCode });
-  mpSetStatus("Private room " + roomCode + " · share the code with your friend.");
+  mpPrivate = false;
+  mpRoomCode = "";
+  mpLobbyPlayers = [];
+  $("mpLobby").classList.add("h");
+  $("mn").classList.remove("h");
+  $("hud").classList.add("h");
+  $("mpRoomCode").value = "";
+  mpSetStatus("Back in the main menu.");
 }
 function mpConnect(params) {
   let url;
@@ -1282,7 +1362,8 @@ function mpConnect(params) {
     return;
   }
   mpSocket.onopen = function () {
-    mpSetStatus(mpPrivate ? ("Connected to room " + mpRoomCode + " · waiting for your friend.") : "Connected · searching for an opponent. Bots remain active.");
+    if (mpPrivate) mpSetLobbyStatus("Connected · syncing lobby…");
+    else mpSetStatus("Connected · searching for an opponent. Bots remain active.");
   };
   mpSocket.onmessage = function (event) {
     let packet;
@@ -1298,13 +1379,24 @@ function mpConnect(params) {
     } else if (packet.type === "room_joined") {
       mpClientId = packet.playerId || mpClientId;
       mpRoomCode = packet.room || mpRoomCode;
-      (packet.players || []).forEach(function (p) {
-        if (p.playerId && p.playerId !== mpClientId) mpEnsureRemote(p.playerId, "Player");
-      });
-      mpSetStatus("Connected to private room " + mpRoomCode + ".");
+      mpLobbyHost = !!packet.isHost;
+      mpLobbyPlayers = (packet.players || []).filter(function(p){return p.playerId && p.playerId !== mpClientId;}).map(function(p){return {id:p.playerId,name:"Player"};});
+      mpShowLobby(mpLobbyHost);
+      mpRenderLobbyPlayers();
+      mpSetLobbyStatus(mpLobbyHost ? "Room created. Share the code and wait for your friend." : "Joined successfully. Waiting for the host to start.");
     } else if (packet.type === "player_joined") {
-      if (packet.playerId && packet.playerId !== mpClientId) mpEnsureRemote(packet.playerId, "Player");
-      mpSetStatus("A player joined room " + mpRoomCode + ".");
+      if (packet.playerId && packet.playerId !== mpClientId) {
+        if (!mpLobbyPlayers.some(function(p){return p.id===packet.playerId;})) mpLobbyPlayers.push({id:packet.playerId,name:"Player"});
+        mpRenderLobbyPlayers();
+        if (G && G.run && mpEnsureRemote) mpEnsureRemote(packet.playerId, "Player");
+      }
+      mpSetLobbyStatus("A player joined the room.");
+    } else if (packet.type === "lobby_update") {
+      mpLobbyPlayers = (packet.players || []).filter(function(p){return p.playerId && p.playerId !== mpClientId;}).map(function(p){return {id:p.playerId,name:"Player"};});
+      mpRenderLobbyPlayers();
+      mpSetLobbyStatus(mpLobbyPlayers.length ? "Your friend is here. Ready when you are." : "Waiting for your friend…");
+    } else if (packet.type === "game_start") {
+      mpStartGameFromLobby();
     } else if (packet.type === "player_left") {
       if (mpRemote && packet.playerId === mpRemote.mpId) {
         mpRemote.bot = 1;
