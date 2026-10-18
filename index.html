@@ -1379,10 +1379,15 @@ function mpHostStart() {
   mpSetLobbyStatus("Starting match…");
   mpSend({type:"start_game"});
 }
-function mpStartGameFromLobby() {
+function mpStartGameFromLobby(serverMode) {
+  // The server's start packet is authoritative so every party member starts
+  // the exact same selected mode, even if a lobby update arrived late.
+  const chosenMode = serverMode === "box" || serverMode === "br" ? serverMode : (mpMode === "box" ? "box" : "br");
+  mpMode = chosenMode;
+  selectedMode = chosenMode;
   $("mpLobby").classList.add("h");
-  mpSetStatus("Match started · live multiplayer connected.");
-  play(mpMode);
+  mpSetStatus("Party match started · " + (chosenMode === "box" ? "Box Fights" : "Battle Royale") + ".");
+  play(chosenMode);
 }
 function mpLeaveLobby() {
   mpDisconnect();
@@ -1455,7 +1460,7 @@ function mpConnect(params) {
       mpLobbyPlayers = [];
       setTimeout(function(){ $("mpLobby").classList.add("h"); $("mn").classList.remove("h"); $("hud").classList.add("h"); }, 900);
     } else if (packet.type === "game_start") {
-      mpStartGameFromLobby();
+      mpStartGameFromLobby(packet.mode);
     } else if (packet.type === "player_left") {
       if (mpRemote && packet.playerId === mpRemote.mpId) {
         mpRemote.bot = 1;
