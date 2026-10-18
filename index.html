@@ -709,6 +709,26 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
   #mn>.row .b,#mn #modeSelect .mode-option,#mn #modeSelect .mode-play{transition:none}
 }
 
+
+/* Custom menu navigation artwork: consistent icon sizing without distortion. */
+#mn>.row .b.menu-nav{gap:5px;overflow:hidden}
+#mn>.row .b.menu-nav:before{content:none!important;display:none!important}
+#mn>.row .b.menu-nav .menu-icon{display:block;width:30px;height:30px;max-width:100%;object-fit:contain;object-position:center;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.24))}
+#mn>.row .b.menu-nav span{display:block;white-space:nowrap;font-size:9px;line-height:1.1;letter-spacing:.055em}
+@media(max-width:1050px){
+ #mn>.row .b.menu-nav .menu-icon{width:27px;height:27px}
+ #mn>.row .b.menu-nav span{font-size:8px}
+}
+@media(max-width:760px){
+ #mn>.row .b.menu-nav{gap:3px;padding:4px 2px}
+ #mn>.row .b.menu-nav .menu-icon{width:24px;height:24px}
+ #mn>.row .b.menu-nav span{font-size:7px;letter-spacing:0}
+}
+@media(max-width:430px){
+ #mn>.row .b.menu-nav .menu-icon{width:21px;height:21px}
+ #mn>.row .b.menu-nav span{font-size:6px}
+}
+
 </style></head><body>
 <canvas id="g"></canvas>
 <div id="boot" aria-label="Loading Pixel Royale.io"><div class="boot-inner">
@@ -728,7 +748,7 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 </div>
 <button class="mode-play" onclick="play(selectedMode)">PLAY <span id="playModeName">CHOOSE MODE</span><b>→</b></button>
 </div>
-<div class="row"><button class="b g" onclick="pn('shop')">SHOP</button><button class="b g" onclick="pn('up')">UPGRADES</button><button class="b g" id="brw" onclick="pn('rw')">REWARDS</button><button class="b g" onclick="pn('st')">STATS</button><button class="b g" onclick="pn('settings')">SETTINGS</button></div>
+<div class="row"><button class="b g menu-nav" onclick="pn('shop')" aria-label="Shop"><img class="menu-icon" src="Shop.png" alt=""> <span>SHOP</span></button><button class="b g menu-nav" onclick="pn('up')" aria-label="Upgrades"><img class="menu-icon" src="Upgrades.png" alt=""> <span>UPGRADES</span></button><button class="b g menu-nav" id="brw" onclick="pn('rw')" aria-label="Rewards"><img class="menu-icon" src="Rewards.png" alt=""> <span>REWARDS</span></button><button class="b g menu-nav" onclick="pn('st')" aria-label="Stats"><img class="menu-icon" src="Stats.png" alt=""> <span>STATS</span></button><button class="b g menu-nav" onclick="pn('settings')" aria-label="Settings"><img class="menu-icon" src="Settings.png" alt=""> <span>SETTINGS</span></button></div>
 <small class="hint" id="menuHint">WASD move · Mouse aim &amp; shoot · F build wall · E edit wall · H medkit · J shield · 1–3 swap · ESC pause<br>Pick a mode above and jump into the fight.</small></div>
 <div id="pl" class="s h" style="background:#000a"><div class="p" id="pc"></div><button class="b" onclick="cl()">CLOSE</button></div>
 <div id="hud" class="h"><div id="vg"></div><div id="dm"></div><div id="fps" class="h">FPS: --</div>
