@@ -144,13 +144,20 @@ export class MyDurableObject extends DurableObject {
     const sockets = this.roomSockets(roomCode);
     if (sockets.length >= MAX_ROOM_PLAYERS) return json({ error: "This room is full." }, 409);
     const clientId = crypto.randomUUID();
-    const response = this.createSocket(null, { clientId, mode: room.mode, roomCode, status: "room", lastStateAt: 0 });
+    const isHost = !room.hostClientId;
+    if (isHost) {
+      room.hostClientId = clientId;
+      await this.ctx.storage.put("room:" + roomCode, room);
+    }
+    const response = this.createSocket(null, { clientId, mode: room.mode, roomCode, status: "room", host: isHost, lastStateAt: 0 });
     const current = this.ctx.getWebSockets().find((ws) => attachment(ws).clientId === clientId);
     if (!current) return response;
-    const players = this.roomSockets(roomCode).map((ws) => ({ playerId: attachment(ws).clientId }));
-    send(current, { type: "room_joined", room: roomCode, mode: room.mode, playerId: clientId, players });
+    const players = this.roomSockets(roomCode).filter((ws) => ws !== current).map((ws) => ({ playerId: attachment(ws).clientId }));
+    send(current, { type: "room_joined", room: roomCode, mode: room.mode, playerId: clientId, isHost, players });
+    const lobbyPlayers = this.roomSockets(roomCode).map((ws) => ({ playerId: attachment(ws).clientId }));
     for (const ws of this.roomSockets(roomCode)) {
       if (ws !== current) send(ws, { type: "player_joined", playerId: clientId, mode: room.mode });
+      send(ws, { type: "lobby_update", players: lobbyPlayers });
     }
     return response;
   }
@@ -165,6 +172,11 @@ export class MyDurableObject extends DurableObject {
     const a = attachment(ws);
     if (data?.type === "ping") { send(ws, { type: "pong", at: Date.now() }); return; }
     if (!a.roomCode || a.status !== "room") return;
+    if (data?.type === "start_game") {
+      if (!a.host) { send(ws, { type: "error", message: "Only the host can start this match." }); return; }
+      for (const peer of this.roomSockets(a.roomCode)) send(peer, { type: "game_start", room: a.roomCode, mode: a.mode });
+      return;
+    }
     if (!["state", "shots", "build"].includes(data?.type)) return;
     if (data.type === "state") {
       const now = Date.now();
@@ -183,8 +195,22 @@ export class MyDurableObject extends DurableObject {
   removeSocket(ws) {
     const a = attachment(ws);
     if (!a.roomCode || a.status !== "room") return;
-    for (const peer of this.roomSockets(a.roomCode)) {
-      if (peer !== ws) send(peer, { type: "player_left", playerId: a.clientId });
+    const roomCode = a.roomCode;
+    const remaining = this.roomSockets(roomCode).filter((peer) => peer !== ws);
+    for (const peer of remaining) send(peer, { type: "player_left", playerId: a.clientId });
+    const room = this.ctx.storage.get("room:" + roomCode);
+    if (a.host && remaining.length) {
+      const next = remaining[0];
+      const nextData = attachment(next);
+      nextData.host = true;
+      next.serializeAttachment(nextData);
+      send(next, { type: "host_changed", playerId: nextData.clientId });
+      const currentRoom = this.ctx.storage.get("room:" + roomCode);
+      Promise.resolve(currentRoom).then((saved) => {
+        if (saved) { saved.hostClientId = nextData.clientId; return this.ctx.storage.put("room:" + roomCode, saved); }
+      }).catch(() => {});
     }
+    const players = remaining.map((peer) => ({ playerId: attachment(peer).clientId }));
+    for (const peer of remaining) send(peer, { type: "lobby_update", players });
   }
 }
