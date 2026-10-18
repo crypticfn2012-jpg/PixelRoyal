@@ -1321,6 +1321,7 @@ function mpShowLobby(isHost) {
   $("mpHostStart").classList.toggle("h", !mpLobbyHost);
   $("mpHostModeRow").classList.toggle("h", !mpLobbyHost);
   $("mpLobbyMode").value = mpMode;
+  $("mpLobbyMode").disabled = !mpLobbyHost || !mpSocket || mpSocket.readyState !== WebSocket.OPEN;
   $("mpHostStart").disabled = true;
   $("mpLobbyTitle").textContent = mpLobbyHost ? "ROOM LOBBY" : "JOINED LOBBY";
   $("mpLobbyDescription").textContent = mpLobbyHost ? "Choose the mode, invite your friends, then start the match." : "You're in the lobby. The host controls the mode and start.";
@@ -1423,6 +1424,7 @@ function mpConnect(params) {
       mpClientId = packet.playerId || mpClientId;
       mpRoomCode = packet.room || mpRoomCode;
       mpLobbyHost = !!packet.isHost;
+      mpMode = packet.mode === "box" ? "box" : "br";
       mpLobbyPlayers = (packet.players || []).filter(function(p){return p.playerId && p.playerId !== mpClientId;}).map(function(p){return {id:p.playerId,name:"Player"};});
       mpShowLobby(mpLobbyHost);
       mpRenderLobbyPlayers();
