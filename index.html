@@ -1244,15 +1244,22 @@ async function createPrivateRoom() {
     mpSetStatus("Room creation failed: " + (error.message || "check Worker URL and deployment."));
   }
 }
-function joinPrivateRoom() {
+async function joinPrivateRoom() {
   const roomCode = ($("mpRoomCode").value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (roomCode.length !== 6) { mpSetStatus("Enter the 6-character room code first."); return; }
   if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
     mpSetStatus("Deploy the Cloudflare Worker first, then set MP_WORKER_URL in index.html.");
     return;
   }
-  mpDisconnect();
-  mpStartPrivate(roomCode, selectedMode === "box" ? "box" : "br");
+  try {
+    const response = await fetch(new URL("/api/rooms/" + roomCode, MP_WORKER_URL));
+    const room = await response.json();
+    if (!response.ok) throw new Error(room.error || "Room not found.");
+    mpDisconnect();
+    mpStartPrivate(roomCode, room.mode === "box" ? "box" : "br");
+  } catch (error) {
+    mpSetStatus("Could not join room: " + (error.message || "check the code and Worker URL."));
+  }
 }
 function mpStartPrivate(roomCode, mode) {
   mpDisconnect();
