@@ -323,6 +323,392 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
  #touchPlaceholder{display:none}
 }
 @media (max-width:620px){.setting-line{grid-template-columns:minmax(0,1fr) minmax(112px,46%);gap:8px;padding:8px 0}.bind-grid{grid-template-columns:1fr}.settings-section{padding:10px}}
+
+/* ===== PixelRoyal lobby refresh: full-screen arena, centred fighter, corner navigation ===== */
+#mn{
+  display:block;
+  position:fixed;
+  inset:0;
+  height:100%;
+  padding:0;
+  overflow:hidden;
+  gap:0;
+  align-items:initial;
+  justify-content:initial;
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 51% 42%,rgba(13,28,47,.02) 0%,rgba(6,12,22,.14) 48%,rgba(4,8,15,.55) 100%),
+    linear-gradient(90deg,rgba(5,10,19,.46),transparent 42%,transparent 65%,rgba(5,10,19,.28));
+}
+#mn:before{display:none;content:none}
+#mn:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(4,9,17,.24),transparent 22%,transparent 62%,rgba(4,9,17,.42));
+}
+#mn>*{z-index:1}
+#mn #pf{
+  position:absolute;
+  top:calc(14px + env(safe-area-inset-top,0px));
+  left:calc(18px + env(safe-area-inset-left,0px));
+  right:auto;
+  max-width:min(330px,40vw);
+  padding:7px 12px 7px 7px;
+  gap:10px;
+  background:rgba(8,15,27,.78);
+  border:1px solid rgba(135,162,198,.3);
+  border-radius:13px;
+  box-shadow:0 8px 26px rgba(0,0,0,.22);
+  backdrop-filter:blur(12px);
+  z-index:12;
+}
+#mn #av{
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  border:1px solid #7188a8;
+  border-radius:10px;
+}
+#mn #pf b{color:#f4f7fc;font-size:12px;font-weight:900;letter-spacing:.09em}
+#mn #pf small{display:block;max-width:190px;color:#aabbd0;font-size:10px;letter-spacing:0;line-height:1.4}
+#mn #loginBadge{
+  border:1px solid rgba(255,174,75,.5);
+  border-radius:8px;
+  padding:6px 8px;
+  color:#ffd09a;
+  background:rgba(255,158,45,.12);
+  font-size:9px;
+  letter-spacing:.08em;
+}
+#mn #top{
+  position:absolute;
+  top:calc(16px + env(safe-area-inset-top,0px));
+  right:calc(22px + env(safe-area-inset-right,0px));
+  left:auto;
+  display:flex;
+  gap:9px;
+  justify-content:flex-end;
+  align-items:center;
+  z-index:12;
+}
+#mn #cn{
+  border:1px solid rgba(255,190,104,.35);
+  border-radius:11px;
+  background:rgba(8,15,27,.8);
+  padding:10px 13px;
+  color:#ffe0af;
+  font-size:14px;
+  font-weight:900;
+  box-shadow:0 8px 24px rgba(0,0,0,.17);
+  backdrop-filter:blur(12px);
+}
+#mn #mu{
+  min-width:104px;
+  padding:10px 12px;
+  border-radius:11px;
+  font-size:10px;
+  letter-spacing:.08em;
+}
+#mn #gameLogo{
+  position:absolute;
+  display:block;
+  top:calc(82px + env(safe-area-inset-top,0px));
+  left:calc(20px + env(safe-area-inset-left,0px));
+  width:min(450px,37vw);
+  height:clamp(104px,17vh,150px);
+  margin:0;
+  object-fit:contain;
+  object-position:left center;
+  transform:none;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.38));
+  z-index:6;
+}
+#mn #pvm{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:230px;
+  height:230px;
+  margin:0;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 14px 28px rgba(0,0,0,.4));
+  pointer-events:none;
+  z-index:2;
+}
+#mn>.row{
+  position:absolute;
+  top:calc(70px + env(safe-area-inset-top,0px));
+  right:calc(18px + env(safe-area-inset-right,0px));
+  left:auto;
+  display:flex;
+  flex-wrap:nowrap;
+  justify-content:flex-end;
+  align-items:stretch;
+  gap:5px;
+  width:auto;
+  max-width:none;
+  padding:0;
+  margin:0;
+  z-index:12;
+}
+#mn>.row .b{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:76px;
+  width:76px;
+  height:64px;
+  padding:7px 5px;
+  border:1px solid rgba(133,159,193,.24);
+  border-radius:12px;
+  background:rgba(8,15,27,.73);
+  color:#dbe5f4;
+  font-size:9px;
+  font-weight:900;
+  line-height:1.15;
+  letter-spacing:.08em;
+  box-shadow:0 7px 22px rgba(0,0,0,.16);
+  backdrop-filter:blur(12px);
+}
+#mn>.row .b:before{
+  display:block;
+  color:#ffc17b;
+  font-family:Arial,sans-serif;
+  font-size:21px;
+  line-height:1;
+  font-weight:600;
+  letter-spacing:0;
+}
+#mn>.row .b:nth-child(1):before{content:"▣"}
+#mn>.row .b:nth-child(2):before{content:"✦"}
+#mn>.row .b:nth-child(3):before{content:"◇"}
+#mn>.row .b:nth-child(4):before{content:"▥"}
+#mn>.row .b:nth-child(5):before{content:"⚙"}
+#mn>.row .b:hover{transform:translateY(-2px);border-color:rgba(255,190,104,.65);background:rgba(25,38,57,.9);color:#fff}
+#mn>.row .b:active{transform:translateY(1px)}
+#mn #modeSelect{
+  position:absolute;
+  right:calc(26px + env(safe-area-inset-right,0px));
+  bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  left:auto;
+  top:auto;
+  width:min(370px,30vw);
+  margin:0;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:1px solid rgba(139,164,197,.38);
+  border-radius:19px;
+  background:linear-gradient(145deg,rgba(12,22,37,.91),rgba(7,14,25,.88));
+  box-shadow:0 22px 60px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(15px);
+  z-index:10;
+}
+#mn #modeSelect .selected-mode{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto auto auto;
+  align-items:center;
+  justify-content:initial;
+  gap:4px 8px;
+  width:100%;
+  min-height:0;
+  margin:0;
+  padding:0 0 10px;
+  text-align:left;
+  border:0;
+  border-bottom:1px solid rgba(143,166,197,.19);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  color:#edf3fc;
+  cursor:pointer;
+}
+#mn #modeSelect .selected-mode:hover{filter:none;transform:none;background:transparent}
+#mn #modeSelect .mode-kicker{
+  grid-column:1 / -1;
+  color:#91a6c2;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.17em;
+}
+#mn #selectedModeName{
+  grid-column:1;
+  color:#fff;
+  font-size:17px;
+  line-height:1.15;
+  letter-spacing:.035em;
+}
+#mn #selectedModeDesc{
+  grid-column:1;
+  color:#b1c0d4;
+  font-size:10px;
+  line-height:1.45;
+}
+#mn #modeSelect .selected-mode em{
+  grid-column:2;
+  grid-row:2 / span 2;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  align-self:center;
+  margin:0;
+  color:#ffc47d;
+  font-size:9px;
+  font-style:normal;
+  font-weight:900;
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+#mn #modeSelect .selected-mode em b{font-size:18px}
+#mn #modeSelect .mode-picker{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+  margin:0;
+}
+#mn #modeSelect .mode-option{
+  min-width:0;
+  padding:8px;
+  gap:6px;
+  border:1px solid rgba(125,151,186,.28);
+  border-radius:11px;
+  background:rgba(18,31,49,.84);
+  box-shadow:none;
+  transition:background .16s,border-color .16s,transform .16s;
+}
+#mn #modeSelect .mode-option img{
+  width:100%;
+  height:65px;
+  margin:0 0 2px;
+  border:1px solid rgba(148,172,204,.23);
+  border-radius:7px;
+  object-fit:cover;
+}
+#mn #modeSelect .mode-option b{font-size:10px;letter-spacing:.055em;color:#f7f9fd}
+#mn #modeSelect .mode-option small{font-size:9px;line-height:1.35;color:#aebfd4}
+#mn #modeSelect .mode-option span{font-size:8px;color:#8fa3bd}
+#mn #modeSelect .mode-option.active{
+  border-color:#ffb451;
+  background:linear-gradient(145deg,rgba(105,67,31,.37),rgba(20,31,46,.96));
+  box-shadow:inset 0 0 0 1px rgba(255,180,81,.14);
+}
+#mn #modeSelect .mode-option.active span{color:#ffcc8c}
+#mn #modeSelect .mode-play{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  min-height:58px;
+  margin-top:1px;
+  padding:13px 17px;
+  border:1px solid #ffdb9d;
+  border-radius:12px;
+  background:linear-gradient(180deg,#ffc36d 0%,#ff9f36 100%);
+  color:#2e1907;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.13em;
+  box-shadow:0 4px 0 #a45d20,0 10px 25px rgba(0,0,0,.24);
+}
+#mn #modeSelect .mode-play span{margin-left:auto;font-size:10px;opacity:.76;letter-spacing:.055em}
+#mn #modeSelect .mode-play b{font-size:25px;line-height:1}
+#mn #modeSelect .mode-play:hover{filter:brightness(1.07);transform:translateY(-2px)}
+#mn #modeSelect .mode-play:active{transform:translateY(1px);box-shadow:0 1px 0 #a45d20}
+#mn #menuHint{
+  position:absolute;
+  left:calc(24px + env(safe-area-inset-left,0px));
+  bottom:calc(22px + env(safe-area-inset-bottom,0px));
+  width:min(460px,39vw);
+  max-width:460px;
+  text-align:left;
+  color:#b5c5d9;
+  font-size:10px;
+  line-height:1.7;
+  letter-spacing:.025em;
+  padding:11px 14px;
+  border:1px solid rgba(132,157,191,.21);
+  border-radius:11px;
+  background:rgba(7,14,24,.65);
+  box-shadow:0 8px 22px rgba(0,0,0,.15);
+  backdrop-filter:blur(9px);
+  z-index:6;
+}
+@media(max-width:1050px){
+  #mn #gameLogo{width:min(340px,32vw);height:clamp(86px,14vh,120px)}
+  #mn>.row{right:12px;gap:4px}
+  #mn>.row .b{width:64px;min-width:64px;height:58px;font-size:8px}
+  #mn>.row .b:before{font-size:19px}
+  #mn #modeSelect{right:14px;bottom:14px;width:min(350px,35vw);padding:14px}
+  #mn #menuHint{left:14px;bottom:14px;width:min(370px,35vw);font-size:9px}
+}
+@media(max-width:760px){
+  #mn #pf{top:calc(8px + env(safe-area-inset-top,0px));left:calc(8px + env(safe-area-inset-left,0px));max-width:45vw;padding:5px 7px;gap:6px}
+  #mn #av{width:29px;height:29px;flex-basis:29px}
+  #mn #pf b{font-size:10px}
+  #mn #pf small{max-width:104px;font-size:8px}
+  #mn #loginBadge{padding:4px 5px;font-size:7px}
+  #mn #top{top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));gap:5px}
+  #mn #cn{padding:7px 8px;font-size:11px}
+  #mn #mu{min-width:75px;padding:7px 8px;font-size:8px}
+  #mn>.row{top:calc(53px + env(safe-area-inset-top,0px));right:8px;left:8px;justify-content:flex-end;gap:4px}
+  #mn>.row .b{width:clamp(49px,13vw,66px);min-width:0;height:49px;padding:5px 2px;font-size:7px;gap:3px;border-radius:9px}
+  #mn>.row .b:before{font-size:16px}
+  #mn #gameLogo{top:calc(67px + env(safe-area-inset-top,0px));left:8px;width:min(220px,44vw);height:clamp(65px,10vh,88px)}
+  #mn #pvm{width:clamp(140px,34vw,200px);height:clamp(140px,34vw,200px);top:44%;left:47%}
+  #mn #modeSelect{right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(330px,48vw);padding:10px;gap:7px;border-radius:14px}
+  #mn #modeSelect .selected-mode{padding-bottom:7px;gap:3px 5px}
+  #mn #mode-kicker{font-size:8px}
+  #mn #selectedModeName{font-size:13px}
+  #mn #selectedModeDesc{font-size:8px}
+  #mn #modeSelect .selected-mode em{font-size:7px;gap:3px}
+  #mn #modeSelect .selected-mode em b{font-size:14px}
+  #mn #modeSelect .mode-picker{gap:5px}
+  #mn #modeSelect .mode-option{padding:6px;gap:4px}
+  #mn #modeSelect .mode-option img{height:clamp(34px,7vh,52px)}
+  #mn #modeSelect .mode-option b{font-size:8px}
+  #mn #modeSelect .mode-option small{font-size:7px}
+  #mn #modeSelect .mode-option span{font-size:7px}
+  #mn #modeSelect .mode-play{min-height:45px;padding:9px 12px;font-size:10px;border-radius:9px}
+  #mn #modeSelect .mode-play span{font-size:8px}
+  #mn #modeSelect .mode-play b{font-size:20px}
+  #mn #menuHint{left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(43vw,250px);padding:7px 9px;font-size:8px;line-height:1.45}
+}
+@media(max-width:760px) and (orientation:landscape){
+  #mn #gameLogo{top:calc(61px + env(safe-area-inset-top,0px));width:min(190px,25vw);height:clamp(47px,13vh,67px)}
+  #mn #pvm{width:clamp(120px,25vw,175px);height:clamp(120px,25vw,175px);top:49%;left:48%}
+  #mn #modeSelect{width:min(280px,38vw);max-height:calc(100dvh - 15px);overflow-y:auto;padding:8px;gap:5px}
+  #mn #modeSelect .selected-mode{padding-bottom:5px}
+  #mn #modeSelect .selected-mode em{font-size:7px}
+  #mn #modeSelect .mode-option img{height:38px}
+  #mn #modeSelect .mode-option small{font-size:7px}
+  #mn #modeSelect .mode-play{min-height:36px;padding:6px 10px}
+  #mn #menuHint{width:min(290px,31vw);font-size:7px;padding:6px 8px}
+}
+@media(max-width:560px) and (orientation:portrait){
+  #mn #pf{max-width:48vw}
+  #mn #pf small{max-width:86px}
+  #mn>.row{top:calc(57px + env(safe-area-inset-top,0px));left:7px;right:7px;justify-content:center}
+  #mn>.row .b{flex:1;width:auto;height:45px;max-width:74px}
+  #mn #gameLogo{top:calc(110px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(280px,68vw);height:clamp(55px,8vh,74px);object-position:center}
+  #mn #pvm{top:43%;left:50%;width:clamp(115px,32vw,158px);height:clamp(115px,32vw,158px)}
+  #mn #modeSelect{right:8px;left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto;max-width:420px;margin:0 auto;padding:9px;gap:6px}
+  #mn #modeSelect .mode-option img{height:clamp(35px,6vh,50px)}
+  #mn #modeSelect .mode-play{min-height:42px}
+  #mn #menuHint{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #mn>.row .b,#mn #modeSelect .mode-option,#mn #modeSelect .mode-play{transition:none}
+}
+
 </style></head><body>
 <canvas id="g"></canvas>
 <div id="boot" aria-label="Loading Pixel Royale.io"><div class="boot-inner">
@@ -333,7 +719,7 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
 <div class="boot-track"><div id="bootBar"></div></div><div class="boot-caption" id="bootCaption">Preparing your battle</div></div></div>
 <div id="mn" class="s h"><div id="pf" role="button" tabindex="0" aria-label="Sign in with CrazyGames"><img id="av" alt=""><div><b id="un">GUEST</b><small id="us">Sign in to sync progress</small></div><span id="loginBadge">SIGN IN</span></div>
 <div id="top"><div id="cn"></div><button class="b g sm" id="mu">SOUND ON</button></div>
-<img id="gameLogo" src="PixelRoyal.png" alt="PixelRoyal" /><canvas id="pvm" width="130" height="130"></canvas>
+<img id="gameLogo" src="PixelRoyal.png" alt="PixelRoyal" /><canvas id="pvm" width="220" height="220"></canvas>
 <div id="modeSelect" aria-label="Choose a game mode">
 <button class="mode-card battle selected-mode" onclick="toggleModePicker()"><span class="mode-kicker">GAME MODE</span><strong id="selectedModeName">SELECT A GAMEMODE</strong><small id="selectedModeDesc">Choose a mode below to get started.</small><em>CHANGE MODE <b>⌄</b></em></button>
 <div id="modePicker" class="mode-picker" aria-label="Available game modes">
@@ -600,7 +986,7 @@ cx.setTransform(1,0,0,1,0,0);const sx=rw/w,sy=rh/h;for(const t of Object.values(
 hud(u)}
 function mloop(t){requestAnimationFrame(mloop);if(G&&G.run)return;const w=innerWidth,h=innerHeight,r=getRenderSize(),rw=r.w,rh=r.h;if(cv.width!==rw||cv.height!==rh){cv.width=rw;cv.height=rh}cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#14407a';cx.fillRect(0,0,rw,rh);const a=t/24000,m=Math.max(1,Math.max(rw,rh)/1100);
 cx.setTransform(m,0,0,m,-(C+Math.cos(a)*380-rw/2/m)*m,-(C+Math.sin(a*1.3)*380-rh/2/m)*m);cx.drawImage(MAP,0,0);cx.setTransform(1,0,0,1,0,0);
-const pc=$('pvm').getContext('2d');pc.clearRect(0,0,130,130);pc.fillStyle='rgba(0,0,0,.3)';pc.beginPath();pc.ellipse(62,100,32,10,0,0,7);pc.fill();pchar(pc,SK[S.skin][1],S.hat,Math.sin(t/800)*.5-.35,1.55,3)}
+const pcv=$('pvm'),pc=pcv.getContext('2d'),pw=pcv.width,ph=pcv.height;pc.clearRect(0,0,pw,ph);pc.fillStyle='rgba(0,0,0,.3)';pc.beginPath();pc.ellipse(pw*.48,ph*.76,pw*.22,ph*.065,0,0,7);pc.fill();pchar(pc,SK[S.skin][1],S.hat,Math.sin(t/800)*.5-.35,2.05,3)}
 function hud(u){const z=G.z;G.alive=G.P.filter(p=>p.alive).length;$('mm').style.display=S.settings.showMinimap&&G.mode!=='box'?'':'none';$('fps').classList.toggle('h',!S.settings.showFps);$('al').textContent=G.mode==='box'?'1V1':G.alive;$('kl').textContent=G.mode==='box'?G.box.totalKills:u.k;$('zt').innerHTML=G.mode==='box'?('BOX FIGHTS · YOU '+G.box.playerScore+' – '+G.box.botScore+' · R'+G.box.round+(G.box.roundEndedAt!=null?' · '+(G.box.roundWinner==='YOU'?'ROUND WON':'ROUND LOST'):'')):(z.shr?'<b style="color:#d79bff">STORM CLOSING</b> ':'NEXT STORM ')+(z.t|0)+'s';
 $('hb').style.width=Math.max(0,u.hp/u.mh*100)+'%';$('sb').style.width=u.sh+'%';$('ht1').textContent=Math.ceil(Math.max(0,u.hp));$('st1').textContent=Math.ceil(u.sh);
 const weaponIcons=['Pistol.png','SMG.png','Shotgun.png','AR.png','Sniper.png'];const ws=u.guns.map((g,i)=>`<div class="sl ${i==u.cur?'on':''}"><small>${i+1}</small><img class="slot-icon" src="${weaponIcons[g.t]}" alt=""><span>${GUNS[g.t].n}</span><b>${u.rl>0&&i==u.cur?'RELOAD':g.a+' / '+GUNS[g.t].m}</b></div>`).join('')+`<div class="sl it2 ${u.med?'':'z'}"><small>H</small><img class="slot-icon item-icon" src="Medkit.png" alt=""><span>Medkit</span><b>x${u.med}</b></div><div class="sl it2 ${u.shd?'':'z'}"><small>J</small><img class="slot-icon item-icon" src="ShieldPotion.png" alt=""><span>Shield</span><b>x${u.shd}</b></div><div class="sl it2 ${u.wc>0?'z':''}"><small>F</small><span>Wall</span><b>250 HP</b></div>`;if(ws!==G.ws){G.ws=ws;$('wp').innerHTML=ws}
