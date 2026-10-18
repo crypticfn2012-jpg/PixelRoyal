@@ -1008,7 +1008,11 @@ for(const g of p.guns)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'g',t:g.t,
 G.alive=G.P.filter(q=>q.alive).length;snd(120,.25,'sawtooth',.06);if(p===G.u)G.dead=G.T,G.place=G.alive+1;if(G.alive<=1&&!G.over){G.fin=G.T}}
 function fire(p,altFire=false){const g=p.guns[p.cur];if(!g||p.cd>0||p.rl>0)return;const base=GUNS[g.t],altFirePulse=g.t===5&&altFire,w=altFirePulse?{...base,d:34,r:.58,s:900,sp:.045,p:1}:base;if(g.a<=0)return rld(p);const tier=TIERS[g.r||0]||TIERS[0];g.a--;p.cd=w.r;p.use=0;if(G.fx.length<300)G.fx.push({x:p.x+Math.cos(p.ang)*28,y:p.y+Math.sin(p.ang)*28,vx:0,vy:0,l:.06,c:'#ffe9a0',r:8});if(w.selfKnock)mv(p,-Math.cos(p.ang)*w.selfKnock,-Math.sin(p.ang)*w.selfKnock);
 const mpShots=[];for(let i=0;i<w.p;i++){const a=p.ang+(R()-.5)*2*(w.sp+p.err);const shot={x:p.x+Math.cos(p.ang)*20,y:p.y+Math.sin(p.ang)*20,vx:Math.cos(a)*w.s,vy:Math.sin(a)*w.s,l:w.rg/w.s,d:w.d*tier.mult*p.dm,o:p,c:p===G.u?tcol(w.c):w.c,knock:w.knock||0};G.bl.push(shot);mpShots.push({x:shot.x,y:shot.y,vx:shot.vx,vy:shot.vy,l:shot.l,d:shot.d,c:shot.c,knock:shot.knock||0})}if(p===G.u&&mpOnline)mpSend({type:"shots",shots:mpShots});
-if(p===G.u||Math.hypot(p.x-G.u.x,p.y-G.u.y)<500)snd(w.p>1?90:w.d>50?60:220,.07,'sawtooth',p===G.u?.05:.02);if(g.a<=0)rld(p)}
+if(p===G.u||Math.hypot(p.x-G.u.x,p.y-G.u.y)<500){
+const shotFreq=w.p>1?90:[220,330,90,260,60,420,100,105,300,520,70,370][g.t]||220;
+const shotWave=['square','sawtooth','sawtooth','square','sawtooth','triangle','sawtooth','sawtooth','square','triangle','sawtooth','triangle'][g.t]||'sawtooth';
+snd(shotFreq,g.t===9?.11:.07,shotWave,p===G.u?.05:.02);
+}if(g.a<=0)rld(p)}
 function rld(p){const g=p.guns[p.cur];if(p.rl>0||g.a>=GUNS[g.t].m)return;p.rl=GUNS[g.t].rl}
 function swap(p,i){if(i<0||i>=p.guns.length||i==p.cur)return;p.cur=i;p.rl=0}
 function want(b,l){
