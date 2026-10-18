@@ -162,7 +162,7 @@ export class MyDurableObject extends DurableObject {
     return response;
   }
 
-  webSocketMessage(ws, message) {
+  async webSocketMessage(ws, message) {
     if (typeof message !== "string" || message.length > MAX_MESSAGE) {
       try { ws.close(1009, "Message too large"); } catch (_) {}
       return;
