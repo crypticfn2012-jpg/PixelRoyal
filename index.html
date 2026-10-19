@@ -1304,7 +1304,7 @@ try{if(sdkReady&&CG&&CG.game&&typeof CG.game.loadingStop==='function')CG.game.lo
 /* ---------- ONLINE MULTIPLAYER ---------- */
 /* Replace this URL with the workers.dev URL printed by: npx wrangler deploy */
 const MP_WORKER_URL = "https://pixelroyal-multiplayer.pixelroyal-21513.workers.dev";
-let mpSocket = null, mpClientId = "", mpOpponentId = "", mpRoomCode = "", mpMode = "br", mpRemote = null, mpOnline = false, mpPrivate = false, mpHudStatus = null;
+let mpSocket = null, mpClientId = "", mpOpponentId = "", mpRoomCode = "", mpMode = "br", mpRemote = null, mpOnline = false, mpPrivate = false, mpHudStatus = null, mpLastStatePayload = "", mpLastStateAt = 0;
 function mpSetStatus(message) {
   const menuStatus = $("mpStatus");
   if (menuStatus) menuStatus.textContent = message;
@@ -1336,6 +1336,8 @@ function mpDisconnect() {
   mpSocket = null;
   mpOnline = false;
   mpRemote = null;
+  mpLastStatePayload = "";
+  mpLastStateAt = 0;
 }
 function startOnline(mode) {
   mpDisconnect();
@@ -1645,14 +1647,19 @@ function mpApplyRemoteState(id, state) {
   }
 }
 function mpSendState() {
-  if (!mpOnline || !mpSocket || mpSocket.readyState !== WebSocket.OPEN || !G || !G.run || !G.u) return;
+  if (!mpOnline || !mpSocket || mpSocket.readyState !== WebSocket.OPEN || !G || !G.run || !G.u || (!mpPrivate && !mpRoomCode)) return;
   const p = G.u;
   const state = {
-    x: p.x, y: p.y, ang: p.ang, hp: p.hp, mh: p.mh, sh: p.sh, alive: p.alive ? 1 : 0,
+    x: Math.round(p.x * 2) / 2, y: Math.round(p.y * 2) / 2, ang: Math.round(p.ang * 1000) / 1000, hp: Math.round(p.hp * 10) / 10, mh: Math.round(p.mh * 10) / 10, sh: Math.round(p.sh * 10) / 10, alive: p.alive ? 1 : 0,
     c: p.c, hat: p.hat || 0, k: p.k || 0, sp: p.sp, med: p.med || 0, shd: p.shd || 0, chug: p.chug || 0,
     cur: p.cur || 0, guns: (p.guns || []).map(function (g) { return { t: g.t, a: g.a, r: g.r || 0 }; }),
     walls: G.W.filter(function (w) { return w.o === p; }).slice(-8).map(function (w) { return { x: w.x, y: w.y, w: w.w, h: w.h, hp: w.hp, ang: w.ang || 0 }; })
   };
+  const encoded = JSON.stringify(state), now = performance.now();
+  if (encoded === mpLastStatePayload && now - mpLastStateAt < 450) return;
+  if (now - mpLastStateAt < 80) return;
+  mpLastStatePayload = encoded;
+  mpLastStateAt = now;
   mpSend({ type: "state", state: state });
 }
 setInterval(mpSendState, 100);
