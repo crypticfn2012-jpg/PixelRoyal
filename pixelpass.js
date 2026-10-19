@@ -76,4 +76,5 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-pp-action]
 document.addEventListener("change",e=>{const el=e.target.closest("[data-pp-equip]");if(el)equip(el.dataset.ppEquip,el.value)});
 window.addEventListener("keydown",e=>{if(e.code!=="KeyB"||e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;const t=e.target;if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||t.isContentEditable))return;triggerEmote()});
 window.PixelProgress={init:init,state:state,accountInfo:()=>accountInfo(state().xp),passInfo:()=>passInfo(state().passXP),awardXP:awardXP,startMatch:startMatch,finishMatch:finishMatch,onEvent:onEvent,onBuild:onBuild,onUpdate:onUpdate,render:render,setTrack:setTrack,claim:claim,unlockPremiumCoins:unlockPremiumCoins,watchPremiumAd:watchPremiumAd,claimChallenge:claimChallenge,equip:equip,refreshMenu:refreshMenu,updateChallengeUI:updateChallengeUI,getBannerColor:bannerColor,getEquippedTitle:()=>state().equippedTitle};
+init();
 })();
