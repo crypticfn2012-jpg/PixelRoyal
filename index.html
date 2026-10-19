@@ -950,7 +950,7 @@ const TIERS=[{n:'Field-Tested',c:'#a9b7c8',mult:1},{n:'Tuned',c:'#75dfcb',mult:1
 const tierRoll=()=>{const q=R();return q<.5?0:q<.79?1:q<.93?2:q<.985?3:4};
 const ART={guns:['Pistol.png','SMG.png','Shotgun.png','AR.png','Sniper.png','PulseRifle.png','Flint-Knock.png','TheOutlaw.png','Scout DMR.png','Pulse Blaster.png','Hand Cannon.png','Buzz SMG.png'].map(src=>{const im=new Image();im.src=src;return im}),medkit:new Image(),shield:new Image(),chug:new Image()};ART.medkit.src='Medkit.png';ART.shield.src='ShieldPotion.png';ART.chug.src='Chug%20Jug.png';
 function save(){const j=JSON.stringify(S);try{if(sdkReady&&CG&&CG.environment!=='disabled'&&CG.data&&typeof CG.data.setItem==='function'){CG.data.setItem('pr',j);return}}catch(e){console.warn('CrazyGames data save unavailable; using browser storage',e)}try{localStorage.setItem('pr',j)}catch(e){}}
-function ad(t){return new Promise(resolve=>{if(!sdkReady||!CG||CG.environment==='disabled'||!CG.ad||typeof CG.ad.requestAd!=='function')return resolve(false);const now=Date.now(),progress=S.progression&&typeof S.progression==='object'?S.progression:null,until=Math.max(Number(S.rewardedCooldownUntil)||0,progress?Number(progress.adBonusReadyAt)||0:0);if(t==='rewarded'&&now<until)return resolve(false);if(t==='rewarded'){S.rewardedCooldownUntil=now+180000;if(progress)progress.adBonusReadyAt=S.rewardedCooldownUntil;save()}let settled=false;const finish=ok=>{if(settled)return;settled=true;muted=0;clearTimeout(timeout);if(t==='rewarded'){const next=Date.now()+(ok?180000:30000);S.rewardedCooldownUntil=next;if(S.progression&&typeof S.progression==='object')S.progression.adBonusReadyAt=next;save()}resolve(!!ok)};const timeout=setTimeout(()=>finish(false),120000);try{CG.ad.requestAd(t,{adStarted:()=>{muted=1},adFinished:()=>finish(true),adError:()=>finish(false)})}catch(e){finish(false)}})}
+function ad(t){return new Promise(resolve=>{if(!sdkReady||!CG||CG.environment==='disabled'||!CG.ad||typeof CG.ad.requestAd!=='function')return resolve(false);const now=Date.now(),progress=S.progression&&typeof S.progression==='object'?S.progression:null,until=Math.max(Number(S.rewardedCooldownUntil)||0,progress?Number(progress.adBonusReadyAt)||0:0);if(t==='rewarded'&&now<until)return resolve(false);if(t==='rewarded'){S.rewardedCooldownUntil=now+180000;if(progress)progress.adBonusReadyAt=S.rewardedCooldownUntil;save()}let settled=false;const finish=ok=>{if(settled)return;settled=true;muted=0;clearTimeout(timeout);if(t==='rewarded'){const next=Date.now()+(ok?180000:30000);S.rewardedCooldownUntil=next;if(S.progression&&typeof S.progression==='object')S.progression.adBonusReadyAt=next;save();if(ok&&window.PixelProgress&&typeof window.PixelProgress.onRewardedAdComplete==='function'){try{window.PixelProgress.onRewardedAdComplete()}catch(e){console.warn('PixelPass rewarded-ad tracking failed',e)}}}resolve(!!ok)};const timeout=setTimeout(()=>finish(false),120000);try{CG.ad.requestAd(t,{adStarted:()=>{muted=1},adFinished:()=>finish(true),adError:()=>finish(false)})}catch(e){finish(false)}})}
 const gp=s=>{try{if(sdkReady&&CG&&CG.environment!=='disabled'&&CG.game){const method=s?'gameplayStart':'gameplayStop';if(typeof CG.game[method]==='function')CG.game[method]()}}catch(e){}};
 let ac;function snd(f,d=.06,t='square',v=.04){if(muted||!sndOn||!S.settings.sound||S.settings.volume<=0)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=Math.max(.0001,v*(S.settings.volume/100));g.gain.exponentialRampToValueAtTime(1e-4,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 // ---------- MAP ----------
@@ -1033,7 +1033,7 @@ function gridPoint(x,y){return{x:C+BUILD_TILE/2+Math.round((x-(C+BUILD_TILE/2))/
 function wallPose(p,a){const ang=cardinal(a),vertical=Math.abs(Math.cos(ang))>.5,pt=gridPoint(p.x+Math.cos(ang)*58,p.y+Math.sin(ang)*58),w=vertical?14:BUILD_TILE,h=vertical?BUILD_TILE:14;return{x:pt.x-w/2,y:pt.y-h/2,w,h,type:'wall',ang}}
 function wallValid(p,o){for(const q of G.P)if(q!==p&&q.alive&&q.x>o.x-16&&q.x<o.x+o.w+16&&q.y>o.y-16&&q.y<o.y+o.h+16)return false;for(const q of G.W)if(o.x<q.x+q.w&&o.x+o.w>q.x&&o.y<q.y+q.h&&o.y+o.h>q.y)return false;return !hit(o.x+o.w/2,o.y+o.h/2,0)&&!hit(o.x+3,o.y+3,0)&&!hit(o.x+o.w-3,o.y+o.h-3,0)}
 function toggleBuildMode(){if(!G||!G.run||G.paused)return;G.edit=null;G.buildMode=!G.buildMode;G.tip=G.buildMode?(MOB?'Tap PLACE to build':'Click to place a wall'):'Build mode closed';G.tt=1.2;$('bw').textContent=G.buildMode?'BUILD ✓':'BUILD';$('bf').textContent=G.buildMode?'PLACE':'FIRE'}
-function build(p,a){if(p.wc>0||!p.alive)return;const o=wallPose(p,a);if(!wallValid(p,o)){if(p===G.u){G.tip='Build space blocked';G.tt=1.1}return}const owned=G.W.filter(w=>w.o===p);if(owned.length>=8)G.W.splice(G.W.indexOf(owned[0]),1);G.W.push({...o,hp:250,maxHp:250,o:p});p.wc=.28;if(p===G.u&&window.PixelProgress)window.PixelProgress.onBuild();if(p===G.u){if(G.mode!=='box'){G.buildMode=false;G.preventFireUntil=G.T+.18}G.tip='Wood wall placed';G.tt=1.2}$('bw').textContent=G&&G.buildMode?'BUILD ✓':'BUILD';$('bf').textContent=G&&G.buildMode?'PLACE':'FIRE';snd(180,.08,'square',.05)}
+function build(p,a){if(p.wc>0||!p.alive)return;const o=wallPose(p,a);if(!wallValid(p,o)){if(p===G.u){G.tip='Build space blocked';G.tt=1.1}return}const owned=G.W.filter(w=>w.o===p);if(owned.length>=8)G.W.splice(G.W.indexOf(owned[0]),1);G.W.push({...o,hp:250,maxHp:250,o:p});p.wc=p===G.u?.22:.28;if(p===G.u&&window.PixelProgress)window.PixelProgress.onBuild();if(p===G.u){if(G.mode!=='box'){G.preventFireUntil=G.T+.12}G.tip='Wood wall placed';G.tt=1.2}$('bw').textContent=G&&G.buildMode?'BUILD ✓':'BUILD';$('bf').textContent=G&&G.buildMode?'PLACE':'FIRE';snd(180,.08,'square',.05)}
 function wallSections(w){const horizontal=w.w>=w.h,span=horizontal?w.w:w.h,part=span/3;return [0,1,2].map(i=>({x:w.x+(horizontal?part*i:0),y:w.y+(horizontal?0:part*i),w:horizontal?part:w.w,h:horizontal?w.h:part,index:i}))}
 function beginEdit(wx,wy){if(!G||!G.run||G.paused)return;G.buildMode=false;$('bw').textContent='BUILD';$('bf').textContent='FIRE';touchFire=0;const u=G.u,owned=G.W.filter(w=>w.o===u);let target=null,best=Infinity;for(const w of owned){const x=w.x+w.w/2,y=w.y+w.h/2,dCursor=Math.hypot(x-wx,y-wy),dPlayer=Math.hypot(x-u.x,y-u.y);if(dPlayer>290)continue;const score=dCursor<110?dCursor:dPlayer+100;if(score<best){best=score;target=w}}if(!target||best>205){G.tip='Aim at one of your walls to edit it';G.tt=1.4;return}G.edit={wall:target,selected:[]};G.tip=MOB?'Tap one tile or two touching tiles, then tap EDIT to confirm':'Select one tile or two touching tiles, then press E';G.tt=2}
 function editTileAt(wx,wy){if(!G||!G.edit)return;const e=G.edit,parts=wallSections(e.wall),i=parts.findIndex(p=>wx>=p.x-3&&wx<=p.x+p.w+3&&wy>=p.y-3&&wy<=p.y+p.h+3);if(i<0)return;let sel=e.selected.slice();if(sel.includes(i))sel=sel.filter(n=>n!==i);else if(sel.length<2&&(!sel.length||Math.abs(sel[0]-i)===1))sel.push(i);else{G.tip='Choose touching tiles only';G.tt=1.1;return}e.selected=sel;G.tip=sel.length?(MOB?'Tap EDIT to confirm edit':'Press E to confirm edit'):(MOB?'Tap a tile to remove':'Select a tile to remove');G.tt=1.2}
@@ -1098,10 +1098,10 @@ b.lt-=dt;if(b.lt<=0){b.lt=.5;if(Math.hypot(b.x-b.lx,b.y-b.ly)<8&&(mvx||mvy)){b.u
 if(b.unst>0){b.unst-=dt;const t=mvx;mvx=-mvy*b.sd;mvy=t*b.sd}
 mvx+=(b.sx||0)*.7;mvy+=(b.sy||0)*.7;const m=Math.hypot(mvx,mvy)||1;mv(b,mvx/m*b.sp*dt,mvy/m*b.sp*dt);
 const g=b.guns[b.cur];if(!b.tg&&g.a<GUNS[g.t].m*.5)rld(b)}
-function upd(dt){const u=G.u,z=G.z;G.T+=dt;if(window.PixelProgress)window.PixelProgress.onUpdate(dt);for(let i=G.L.length-1;i>=0;i--){const l=G.L[i];if(l.dropped&&G.T-(l.droppedAt??G.T)>=10)G.L.splice(i,1)}if(!S.settings.particles&&G.fx.length)G.fx.length=0;
+function upd(dt){const u=G.u,z=G.z;G.T+=dt;for(const rp of G.P){if(!rp.mpId||!Number.isFinite(rp.mpTargetX)||!Number.isFinite(rp.mpTargetY))continue;const a=1-Math.exp(-Math.min(dt,.05)*18);rp.x+=(rp.mpTargetX-rp.x)*a;rp.y+=(rp.mpTargetY-rp.y)*a;if(Number.isFinite(rp.mpTargetAng)){const da=Math.atan2(Math.sin(rp.mpTargetAng-rp.ang),Math.cos(rp.mpTargetAng-rp.ang));rp.ang+=da*a}}if(window.PixelProgress)window.PixelProgress.onUpdate(dt);for(let i=G.L.length-1;i>=0;i--){const l=G.L[i];if(l.dropped&&G.T-(l.droppedAt??G.T)>=10)G.L.splice(i,1)}if(!S.settings.particles&&G.fx.length)G.fx.length=0;
 if(u.alive&&!G.paused){let ix=(keys.d||0)-(keys.a||0),iy=(keys.s||0)-(keys.w||0),fr=ms.d||touchFire;
 for(const t of Object.values(tc)){const dx=t.x-t.ox,dy=t.y-t.oy,d=Math.hypot(dx,dy);if(t.s==='m'){if(d<7){ix=0;iy=0}else{const power=Math.min(1,(d-7)/35),smooth=power*power*(3-2*power);ix=dx/d*smooth;iy=dy/d*smooth}}else if(t.s==='a'&&d>7){u.ang=Math.atan2(dy,dx)}}
-if(!MOB){const ax=ms.x-innerWidth/2,ay=ms.y-innerHeight/2;/* Aim against the current viewport centre rather than the previous camera render. */if(ax*ax+ay*ay>144)u.ang=Math.atan2(ay,ax)}
+if(!MOB){const aimCenter=innerWidth/2-(G.camShake||0)*Z,ax=ms.x-aimCenter,ay=ms.y-aimCenter;/* Use the player’s actual on-screen centre, including camera shake. */if(ax*ax+ay*ay>144)u.ang=Math.atan2(ay,ax)}
 const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}mv(u,ix*u.sp*dt,iy*u.sp*dt);if(fr){if(G.buildMode)build(u,u.ang);else if(G.T>(G.preventFireUntil||0))fire(u,ms.b===2)}pick(u)}
 for(const p of G.P){if(!p.alive)continue;p.cd-=dt;p.fl-=dt;p.wc-=dt;if(p.use){p.use.t-=dt;if(p.use.t<=0){const k=p.use.k;if(k==='h'){p.med--;p.hp=Math.min(p.mh,p.hp+60)}else if(k==='s'){p.shd--;p.sh=Math.min(100,p.sh+50)}else if(k==='j'){p.chug--;p.hp=p.mh;p.sh=100}for(let j=0;j<8;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*60,vy:-30-R()*40,l:.7,c:k==='h'?'#5be35b':k==='j'?'#54d6a8':'#4dc9ff',t:'+'});p.use=0;snd(k==='j'?360:520,.15,'triangle')}}if(p.rl>0){p.rl-=dt;if(p.rl<=0)p.guns[p.cur].a=GUNS[p.guns[p.cur].t].m}if(p.bot){ai(p,dt);pick(p)}
 if(G.mode!=='box'&&Math.hypot(p.x-z.x,p.y-z.y)>z.r){p.hp-=(1+z.ph*1.5)*dt;if(p.hp<=0)kill(p,0)}}
@@ -1156,7 +1156,7 @@ function drawWall(o,ghost=false,valid=true){
  cx.restore()
 }
 
-function draw(){const w=innerWidth,h=innerHeight,r=getRenderSize(),rw=r.w,rh=r.h;if(cv.width!==rw||cv.height!==rh){cv.width=rw;cv.height=rh}Z=G.mode==='box'?Math.min(1,Math.min(w/1320,h/820)):w<750?.7:1;cx.setTransform(1,0,0,1,0,0);const u=G.u,T=G.T,sh=S.settings.screenShake&&G.hurt>0&&G.mode!=='box'?(R()-.5)*7:0;cam.x=u.x-rw/2/Z+sh;cam.y=u.y-rh/2/Z+sh;
+function draw(){const w=innerWidth,h=innerHeight,r=getRenderSize(),rw=r.w,rh=r.h;if(cv.width!==rw||cv.height!==rh){cv.width=rw;cv.height=rh}Z=G.mode==='box'?Math.min(1,Math.min(w/1320,h/820)):w<750?.7:1;cx.setTransform(1,0,0,1,0,0);const u=G.u,T=G.T,sh=S.settings.screenShake&&G.hurt>0&&G.mode!=='box'?(R()-.5)*7:0;G.camShake=sh;cam.x=u.x-rw/2/Z+sh;cam.y=u.y-rh/2/Z+sh;
 cx.fillStyle='#14407a';cx.fillRect(0,0,rw,rh);cx.setTransform(Z,0,0,Z,-cam.x*Z,-cam.y*Z);cx.drawImage(G.mode==='box'&&BOX_MAP?BOX_MAP:MAP,0,0);const vw=rw/Z/2+40,vh=rh/Z/2+40,viewX=u.x,viewY=u.y,vis=o=>Math.abs(o.x-viewX)<vw&&Math.abs(o.y-viewY)<vh;
 for(const l of G.L)if(vis(l))lootD(l,T,u);
 for(const o of G.W)drawWall(o);
@@ -1618,9 +1618,18 @@ function mpApplyRemoteState(id, state) {
     if (remote.alive) kill(remote, null);
     return;
   }
-  remote.x = Number.isFinite(state.x) ? state.x : remote.x;
-  remote.y = Number.isFinite(state.y) ? state.y : remote.y;
-  remote.ang = Number.isFinite(state.ang) ? state.ang : remote.ang;
+  const targetX = Number.isFinite(state.x) ? state.x : remote.x;
+  const targetY = Number.isFinite(state.y) ? state.y : remote.y;
+  const targetAng = Number.isFinite(state.ang) ? state.ang : remote.ang;
+  if (!Number.isFinite(remote.mpTargetX) || !Number.isFinite(remote.mpTargetY)) {
+    remote.x = targetX;
+    remote.y = targetY;
+    remote.ang = targetAng;
+  }
+  remote.mpTargetX = targetX;
+  remote.mpTargetY = targetY;
+  remote.mpTargetAng = targetAng;
+  remote.alive = 1;
   remote.hp = Math.max(0, Math.min(200, Number(state.hp) || 0));
   remote.mh = Math.max(1, Math.min(200, Number(state.mh) || 100));
   remote.sh = Math.max(0, Math.min(100, Number(state.sh) || 0));
@@ -1656,12 +1665,12 @@ function mpSendState() {
     walls: G.W.filter(function (w) { return w.o === p; }).slice(-8).map(function (w) { return { x: w.x, y: w.y, w: w.w, h: w.h, hp: w.hp, ang: w.ang || 0 }; })
   };
   const encoded = JSON.stringify(state), now = performance.now();
-  if (encoded === mpLastStatePayload && now - mpLastStateAt < 450) return;
-  if (now - mpLastStateAt < 80) return;
+  if (encoded === mpLastStatePayload && now - mpLastStateAt < 1000) return;
+  if (now - mpLastStateAt < 120) return;
   mpLastStatePayload = encoded;
   mpLastStateAt = now;
   mpSend({ type: "state", state: state });
 }
-setInterval(mpSendState, 100);
+setInterval(mpSendState, 125);
 
 </script><script src="pixelpass.js"></script></body></html>
