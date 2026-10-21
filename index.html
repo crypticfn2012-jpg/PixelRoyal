@@ -1002,7 +1002,7 @@ function initPulseBosses(){
  if(!G||G.mode==='box'||!BOSS_CONFIG.enabled)return;
  const bossSpot=cfg=>{for(let n=0;n<90;n++){const a=R()*Math.PI*2,d=150+R()*145,x=cfg.x+Math.cos(a)*d,y=cfg.y+Math.sin(a)*d;if(!hit(x,y,28))return[x,y]}return[cfg.x+300,cfg.y+300]};
  const shardBag=[...SHARD_CONFIG];for(let i=shardBag.length-1;i>0;i--){const j=R()*(i+1)|0;[shardBag[i],shardBag[j]]=[shardBag[j],shardBag[i]]}
- G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>{const pos=bossSpot(cfg),hp=BOSS_CONFIG.bossHealth*BOSS_CONFIG.soloScale;return({...cfg,x:pos[0],y:pos[1],hp,mh:hp,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0})});
+ G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>{const pos=bossSpot(cfg),hp=BOSS_CONFIG.bossHealth*BOSS_CONFIG.soloScale;return({...cfg,n:cfg.name,k:0,x:pos[0],y:pos[1],hp,mh:hp,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0})});
  G.eb=[];
 }
 function activateShard(p){
