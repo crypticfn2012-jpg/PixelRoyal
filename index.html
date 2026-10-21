@@ -978,7 +978,7 @@ GUNS.push(...PULSE_WEAPONS);
 // ---------- PULSE BOSSES & SHARDS (Season 1) ----------
 const BOSS_CONFIG={
  enabled:true,bossesPerMatch:3,weaponDropChance:.15,shardPerBoss:true,soloScale:.78,
- bossHealth:760,phaseTwoAt:.5,attackTelegraph:1.05,attackCooldown:2.9,attackDamage:13,attackRadius:104,
+ bossHealth:760,phaseTwoAt:.5,attackTelegraph:1.05,attackCooldown:3.25,attackDamage:11,attackRadius:104,
  shardCooldown:18,
  shards:[
   {id:'overdrive',name:'Overdrive Shard',color:'#42efff',duration:6,cooldown:18,damageMult:1.22,speedMult:1.08,tradeoff:'Take 10% more damage while active'},
@@ -1000,8 +1000,9 @@ const SHARD_CONFIG=BOSS_CONFIG.shards;
 GUNS.push(...BOSS_CONFIG.uniqueWeapons);
 function initPulseBosses(){
  if(!G||G.mode==='box'||!BOSS_CONFIG.enabled)return;
+ const bossSpot=cfg=>{for(let n=0;n<90;n++){const a=R()*Math.PI*2,d=150+R()*145,x=cfg.x+Math.cos(a)*d,y=cfg.y+Math.sin(a)*d;if(!hit(x,y,28))return[x,y]}return[cfg.x+300,cfg.y+300]};
  const shardBag=[...SHARD_CONFIG];for(let i=shardBag.length-1;i>0;i--){const j=R()*(i+1)|0;[shardBag[i],shardBag[j]]=[shardBag[j],shardBag[i]]}
- G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>({...cfg,x:cfg.x+(R()-.5)*90,y:cfg.y+(R()-.5)*90,hp:BOSS_CONFIG.bossHealth,mh:BOSS_CONFIG.bossHealth,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0}));
+ G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>{const pos=bossSpot(cfg),hp=BOSS_CONFIG.bossHealth*BOSS_CONFIG.soloScale;return({...cfg,x:pos[0],y:pos[1],hp,mh:hp,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0})});
  G.eb=[];
 }
 function activateShard(p){
@@ -1035,13 +1036,13 @@ function updatePulseBosses(dt){
   if(d>205){const speed=b.phase===2?61:43,nx=b.x+dx/d*speed*dt,ny=b.y+dy/d*speed*dt;if(!hit(nx,b.y,25))b.x=nx;if(!hit(b.x,ny,25))b.y=ny}
   b.attackTimer-=dt;
   if(b.telegraph>0){b.telegraph-=dt;if(b.telegraph<=0){
-   if(b.attack==='ring'){for(let k=0;k<10;k++){const a=k*Math.PI/5;G.eb.push({x:b.x,y:b.y,vx:Math.cos(a)*250,vy:Math.sin(a)*250,l:2.1,d:BOSS_CONFIG.attackDamage*.7,c:b.color,r:7})}}
-   else if(b.attack==='volley'){for(let k=-1;k<=1;k++){const a=b.face+k*(b.phase===2?.18:.28);G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*330,vy:Math.sin(a)*330,l:2.4,d:BOSS_CONFIG.attackDamage,c:b.color,r:6})}}
-   else{for(let k=-2;k<=2;k++){const a=b.face+k*.14;G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*390,vy:Math.sin(a)*390,l:1.9,d:BOSS_CONFIG.attackDamage*.8,c:b.color,r:5})}}
+   if(b.attack==='ring'){for(let k=0;k<10;k++){const a=k*Math.PI/5;G.eb.push({x:b.x,y:b.y,vx:Math.cos(a)*250,vy:Math.sin(a)*250,l:2.1,d:BOSS_CONFIG.attackDamage*.7,c:b.color,r:7,source:b})}}
+   else if(b.attack==='volley'){for(let k=-1;k<=1;k++){const a=b.face+k*(b.phase===2?.18:.28);G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*330,vy:Math.sin(a)*330,l:2.4,d:BOSS_CONFIG.attackDamage,c:b.color,r:6,source:b})}}
+   else{for(let k=-2;k<=2;k++){const a=b.face+k*.14;G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*390,vy:Math.sin(a)*390,l:1.9,d:BOSS_CONFIG.attackDamage*.8,c:b.color,r:5,source:b})}}
    b.attackTimer=BOSS_CONFIG.attackCooldown*(b.phase===2?.78:1);
   }}else if(b.attackTimer<=0){b.telegraph=BOSS_CONFIG.attackTelegraph;b.attackAngle=b.face;G.feed.push([b.name+' charging attack',G.T])}
  }
- for(let i=G.eb.length-1;i>=0;i--){const e=G.eb[i];e.x+=e.vx*dt;e.y+=e.vy*dt;e.l-=dt;let remove=e.l<=0||hit(e.x,e.y,0);if(!remove)for(const p of G.P){if(!p.alive||Math.hypot(p.x-e.x,p.y-e.y)>17)continue;dmg(p,e.d,null);for(let j=0;j<5;j++)G.fx.push({x:e.x,y:e.y,vx:(R()-.5)*90,vy:(R()-.5)*90,l:.25,c:e.c,r:2});remove=true;break}if(remove)G.eb.splice(i,1)}
+ for(let i=G.eb.length-1;i>=0;i--){const e=G.eb[i];e.x+=e.vx*dt;e.y+=e.vy*dt;e.l-=dt;let remove=e.l<=0||hit(e.x,e.y,0);if(!remove)for(const p of G.P){if(!p.alive||Math.hypot(p.x-e.x,p.y-e.y)>17)continue;dmg(p,e.d,e.source||null);for(let j=0;j<5;j++)G.fx.push({x:e.x,y:e.y,vx:(R()-.5)*90,vy:(R()-.5)*90,l:.25,c:e.c,r:2});remove=true;break}if(remove)G.eb.splice(i,1)}
 }
 
 const TIERS=[{n:'Field-Tested',c:'#a9b7c8',mult:1},{n:'Tuned',c:'#75dfcb',mult:1.08},{n:'Overclocked',c:'#62a7ff',mult:1.17},{n:'Prototype',c:'#c58cff',mult:1.28},{n:'Blacksite',c:'#ffbd67',mult:1.42}];
