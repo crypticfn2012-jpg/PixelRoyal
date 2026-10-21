@@ -24,3 +24,13 @@
 .pp-logo img{display:block;width:100%;height:100%;object-fit:contain}
 .pp-logo-small{width:54px;height:54px;flex-basis:54px;border-radius:12px}
 #mn>.row #ppNav .pixelpass-menu-icon{width:30px;height:30px;min-width:30px;max-width:30px;object-fit:contain;flex:none}
+
+/* Season 1: Pulse menu and PixelPass finish */
+#menuHint,.hint#menuHint{display:none!important}
+#mn>.row .locker-menu-icon{width:30px;height:30px;min-width:30px;max-width:30px;object-fit:contain;flex:none}
+#pc.pixelpass-panel{background:radial-gradient(ellipse at 92% 0%,#173b62 0%,transparent 38%),linear-gradient(145deg,#101d36,#080f20 72%);border-color:#42dfff;box-shadow:0 0 0 2px #07111f,0 0 28px #16d9ff22}
+.pixelpass-panel h2{color:#74f3ff;text-shadow:0 0 16px #20dfff30}.pp-kicker{color:#ff5edb}.pp-logo{border-color:#42dfff;background:linear-gradient(145deg,#102d46,#11152e)}.pp-logo img{filter:drop-shadow(0 0 8px #39e8ff40)}
+.pp-stat{border-color:#244e70;background:linear-gradient(135deg,#0d2038,#0b142a)}.pp-stat small{color:#65dff3}.pp-meter{border-color:#245875}.pp-meter i{background:linear-gradient(90deg,#25dfff,#9a72ff 65%,#ff54d6)}
+.pp-premium-actions{border-color:#794f9b;background:linear-gradient(120deg,#171b3c,#10152c)}.pp-premium-actions strong,.pp-subheading{color:#65eaff}.pp-premium-unlocked{background:#102c3d;border-color:#2acbe4}.pp-premium-unlocked strong{color:#75f5ff}
+.pp-tier{border-color:#213b56;background:linear-gradient(100deg,#0c172b,#10152b)}.pp-tier.unlocked{border-color:#28768c;background:linear-gradient(100deg,#102b3c,#111a35)}.pp-reward-icon{border-color:#286b84;background:linear-gradient(145deg,#12344a,#171a39);color:#7cefff}.pp-coins{color:#66e9ff}.pp-boost{color:#ff6de1}.pp-skin{color:#b59bff}.pp-hat{color:#75e9ff}.pp-trail{color:#ff75dd}.pp-title{color:#79efff}.pp-banner{color:#b69bff}.pp-emote{color:#ff8fdb}
+.pp-tier .b{border-color:#276d87}.pp-tier .b:not(.g){background:linear-gradient(120deg,#147f9a,#6649b5);color:#fff}.pp-equip{border-color:#254d70;background:#0b192c}.pp-equip select{border-color:#286780;background:#0e2037}
