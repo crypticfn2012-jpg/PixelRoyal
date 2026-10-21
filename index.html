@@ -973,7 +973,77 @@ const PULSE_WEAPONS=[
  {...GUNS[12],n:'Pulse Double Tap',d:6.5,r:.88,s:590,m:8,rl:2.05,sp:.23,p:10,c:'#ff4bc8',v:2.8,pulse:true,perk:'echo'},
  {...GUNS[13],n:'Pulse Burst AR',d:12.5,r:.32,s:840,m:27,rl:1.85,sp:.052,p:3,c:'#42efff',v:3.2,pulse:true,perk:'ion'}
 ];
+
 GUNS.push(...PULSE_WEAPONS);
+// ---------- PULSE BOSSES & SHARDS (Season 1) ----------
+const BOSS_CONFIG={
+ enabled:true,bossesPerMatch:3,weaponDropChance:.15,shardPerBoss:true,soloScale:.78,
+ bossHealth:760,phaseTwoAt:.5,attackTelegraph:1.05,attackCooldown:2.9,attackDamage:13,attackRadius:104,
+ shardCooldown:18,
+ shards:[
+  {id:'overdrive',name:'Overdrive Shard',color:'#42efff',duration:6,cooldown:18,damageMult:1.22,speedMult:1.08,tradeoff:'Take 10% more damage while active'},
+  {id:'phase',name:'Phase Shard',color:'#ff4bc8',duration:2.2,cooldown:16,speedMult:1.65,tradeoff:'Weapon damage is reduced by 15% while active'},
+  {id:'aegis',name:'Aegis Shard',color:'#9d8cff',duration:5,cooldown:20,shield:24,tradeoff:'Movement speed is reduced by 12% while active'}
+ ],
+ bosses:[
+  {id:'warden',name:'THE WARDEN',title:'Containment Unit',x:1680,y:1680,color:'#42efff',attack:'ring'},
+  {id:'ravager',name:'THE RAVAGER',title:'Pursuit Prototype',x:945,y:945,color:'#ff4bc8',attack:'volley'},
+  {id:'oracle',name:'THE ORACLE',title:'Signal Intelligence',x:2415,y:945,color:'#9d8cff',attack:'burst'}
+ ],
+ uniqueWeapons:[
+  {n:'Warden Core',d:31,r:.26,s:850,m:22,rl:1.55,sp:.025,p:1,rg:650,c:'#42efff',v:3.7,pulse:true,bossOnly:true,perk:'bossArc'},
+  {n:'Ravager Driver',d:12,r:.09,s:760,m:36,rl:1.7,sp:.1,p:2,rg:460,c:'#ff4bc8',v:3.45,pulse:true,bossOnly:true,perk:'bossRift'},
+  {n:'Oracle Lance',d:59,r:.95,s:1350,m:5,rl:2.15,sp:.005,p:1,rg:1050,c:'#9d8cff',v:3.85,pulse:true,bossOnly:true,perk:'bossPierce'}
+ ]
+};
+const SHARD_CONFIG=BOSS_CONFIG.shards;
+GUNS.push(...BOSS_CONFIG.uniqueWeapons);
+function initPulseBosses(){
+ if(!G||G.mode==='box'||!BOSS_CONFIG.enabled)return;
+ const shardBag=[...SHARD_CONFIG];for(let i=shardBag.length-1;i>0;i--){const j=R()*(i+1)|0;[shardBag[i],shardBag[j]]=[shardBag[j],shardBag[i]]}
+ G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>({...cfg,x:cfg.x+(R()-.5)*90,y:cfg.y+(R()-.5)*90,hp:BOSS_CONFIG.bossHealth,mh:BOSS_CONFIG.bossHealth,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0}));
+ G.eb=[];
+}
+function activateShard(p){
+ if(!p||!p.alive||!p.shardType){G.tip='Defeat a Pulse boss to claim a shard';G.tt=1.6;return}
+ const cfg=SHARD_CONFIG.find(x=>x.id===p.shardType);if(!cfg)return;
+ if((p.shardCooldownUntil||0)>G.T){G.tip='Shard cooling down · '+Math.ceil(p.shardCooldownUntil-G.T)+'s';G.tt=1.2;return}
+ p.shardActiveUntil=G.T+cfg.duration;p.shardCooldownUntil=G.T+cfg.cooldown;
+ if(cfg.shield)p.sh=Math.min(100,p.sh+cfg.shield);
+ G.tip=cfg.name+' activated · '+cfg.tradeoff;G.tt=2.4;
+ for(let j=0;j<18;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*180,vy:(R()-.5)*180,l:.55,c:cfg.color,r:2.5});
+ snd(740,.16,'triangle',.045);
+}
+function bossDamage(b,amount,owner){
+ if(!b||!b.alive||!Number.isFinite(amount)||amount<=0)return;
+ b.hp=Math.max(0,b.hp-amount);b.hitFlash=.12;
+ if(b.hp<=0){
+  b.alive=false;G.feed.push([b.name+' defeated',G.T]);
+  G.L.push({x:b.x+20,y:b.y,k:'shard',shardType:b.shard,ok:0,dropped:false,createdAt:G.T});
+  if(R()<BOSS_CONFIG.weaponDropChance)G.L.push({x:b.x-24,y:b.y+18,k:'g',t:b.weaponIndex,r:3,ok:0,dropped:false,createdAt:G.T,bossDrop:true});
+  for(let j=0;j<38;j++)G.fx.push({x:b.x,y:b.y,vx:(R()-.5)*280,vy:(R()-.5)*280,l:.85,c:b.color,r:2+R()*3});
+  if(owner===G.u){G.tip=b.name+' defeated! Guaranteed shard dropped.';G.tt=3}
+  snd(180,.4,'sawtooth',.06);
+ }
+}
+function updatePulseBosses(dt){
+ if(!G||G.mode==='box'||!G.B)return;
+ for(const b of G.B){if(!b.alive)continue;b.hitFlash=Math.max(0,b.hitFlash-dt);b.phase=b.hp<=b.mh*BOSS_CONFIG.phaseTwoAt?2:1;
+  const targets=G.P.filter(p=>p.alive);if(!targets.length)continue;
+  let target=targets[0],dist=Infinity;for(const p of targets){const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<dist){dist=d;target=p}}
+  const dx=target.x-b.x,dy=target.y-b.y,d=Math.max(1,Math.hypot(dx,dy));b.face=Math.atan2(dy,dx);
+  if(d>205){const speed=b.phase===2?61:43,nx=b.x+dx/d*speed*dt,ny=b.y+dy/d*speed*dt;if(!hit(nx,b.y,25))b.x=nx;if(!hit(b.x,ny,25))b.y=ny}
+  b.attackTimer-=dt;
+  if(b.telegraph>0){b.telegraph-=dt;if(b.telegraph<=0){
+   if(b.attack==='ring'){for(let k=0;k<10;k++){const a=k*Math.PI/5;G.eb.push({x:b.x,y:b.y,vx:Math.cos(a)*250,vy:Math.sin(a)*250,l:2.1,d:BOSS_CONFIG.attackDamage*.7,c:b.color,r:7})}}
+   else if(b.attack==='volley'){for(let k=-1;k<=1;k++){const a=b.face+k*(b.phase===2?.18:.28);G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*330,vy:Math.sin(a)*330,l:2.4,d:BOSS_CONFIG.attackDamage,c:b.color,r:6})}}
+   else{for(let k=-2;k<=2;k++){const a=b.face+k*.14;G.eb.push({x:b.x+Math.cos(a)*25,y:b.y+Math.sin(a)*25,vx:Math.cos(a)*390,vy:Math.sin(a)*390,l:1.9,d:BOSS_CONFIG.attackDamage*.8,c:b.color,r:5})}}
+   b.attackTimer=BOSS_CONFIG.attackCooldown*(b.phase===2?.78:1);
+  }}else if(b.attackTimer<=0){b.telegraph=BOSS_CONFIG.attackTelegraph;b.attackAngle=b.face;G.feed.push([b.name+' charging attack',G.T])}
+ }
+ for(let i=G.eb.length-1;i>=0;i--){const e=G.eb[i];e.x+=e.vx*dt;e.y+=e.vy*dt;e.l-=dt;let remove=e.l<=0||hit(e.x,e.y,0);if(!remove)for(const p of G.P){if(!p.alive||Math.hypot(p.x-e.x,p.y-e.y)>17)continue;dmg(p,e.d,null);for(let j=0;j<5;j++)G.fx.push({x:e.x,y:e.y,vx:(R()-.5)*90,vy:(R()-.5)*90,l:.25,c:e.c,r:2});remove=true;break}if(remove)G.eb.splice(i,1)}
+}
+
 const TIERS=[{n:'Field-Tested',c:'#a9b7c8',mult:1},{n:'Tuned',c:'#75dfcb',mult:1.08},{n:'Overclocked',c:'#62a7ff',mult:1.17},{n:'Prototype',c:'#c58cff',mult:1.28},{n:'Blacksite',c:'#ffbd67',mult:1.42}];
 const tierRoll=()=>{const q=R();return q<.5?0:q<.79?1:q<.93?2:q<.985?3:4};
 const ART={guns:['Pistol.png','SMG.png','Shotgun.png','AR.png','Sniper.png','PulseRifle.png','Flint-Knock.png','TheOutlaw.png','Scout DMR.png','Pulse Blaster.png','Hand Cannon.png','Buzz SMG.png','DoubleTap.png','BurstAR.png'].map(src=>{const im=new Image();im.src=src;return im}),medkit:new Image(),shield:new Image(),chug:new Image()};ART.medkit.src='Medkit.png';ART.shield.src='ShieldPotion.png';ART.chug.src='Chug%20Jug.png';
@@ -1046,7 +1116,7 @@ function advanceBoxRound(){if(!G||!G.box||G.over)return;const bx=G.box;if(bx.pla
 function finishBoxMatch(){if(!G||!G.box||G.over)return;const bx=G.box,win=bx.playerScore>=5;G.over=1;G.run=0;gp(0);const c=bx.playerScore*35+(win?120:20);G.c=c;S.games++;S.kills+=bx.totalKills;if(win)S.wins++;S.coins+=c;recordMatchResult(win);if(window.PixelProgress)window.PixelProgress.finishMatch({mode:'box',win:win,kills:bx.totalKills,duration:G.T});$('et').textContent=win?'BOX FIGHTS VICTORY':'BOX FIGHTS DEFEAT';$('et').style.color=win?'#ffd447':'#ff777d';$('ec').innerHTML='<div style="font-size:32px;color:#ffbd67">'+bx.playerScore+' — '+bx.botScore+'</div>Rounds won · first to 5<br>Opponent: '+bx.botName+'<br><span style="color:#ffd447">+'+c+' <i class="co"></i></span>';$('x2').classList.remove('d');$('lg2').style.display=user||!(sdkReady&&CG&&CG.user&&CG.user.isUserAccountAvailable)?'none':'';$('en').classList.remove('h');$('hud').classList.add('h');if(win)try{CG.game.happytime()}catch(e){}}
 function toggleModePicker(){$('modePicker').classList.toggle('h')}
 function selectMode(mode){selectedMode=mode==='box'?'box':'br';const box=selectedMode==='box';$('selectedModeName').textContent=box?'BOX FIGHTS':'BATTLE ROYALE';$('selectedModeDesc').textContent=box?'A focused 1v1. First to five rounds wins.':'Drop in, gear up and be the last player standing.';$('playModeName').textContent=box?'BOX FIGHTS':'BATTLE ROYALE';$('optionBr').classList.toggle('active',!box);$('optionBox').classList.toggle('active',box);$('optionBr').querySelector('span').textContent=box?'SELECT':'SELECTED';$('optionBox').querySelector('span').textContent=box?'SELECTED':'SELECT';$('modePicker').classList.add('h')}
-function play(mode=selectedMode){if(mode!=='box'&&mode!=='br'&&!selectedMode){$('modePicker').classList.remove('h');$('selectedModeName').textContent='SELECT A GAMEMODE';$('selectedModeDesc').textContent='Choose a mode below to get started.';return}const chosen=mode==='box'?'box':'br';selectedMode=chosen;selectMode(chosen);if(window.PixelProgress)window.PixelProgress.startMatch();cl();$('en').classList.add('h');$('mn').classList.add('h');const go=()=>{G={P:[],L:[],W:[],bl:[],fx:[],feed:[],T:0,run:1,over:0,buildMode:false,buildPiece:'wall',edit:null,preventFireUntil:0,mode:chosen,box:chosen==='box'?{round:1,playerScore:0,botScore:0,totalKills:0,botName:NM[R()*NM.length|0],roundEndedAt:null,roundWinner:'',transitioning:false}:null,z:{x:C,y:C,r:IR+60,sx:C,sy:C,sr:IR+60,tx:C,ty:C,tr:720,ph:0,t:40,shr:0},tip:MOB?'Loot nearby · Use the touch buttons to build and heal':'Loot near your spawn. F = wall, H = medkit, J = shield',tt:5};
+function play(mode=selectedMode){if(mode!=='box'&&mode!=='br'&&!selectedMode){$('modePicker').classList.remove('h');$('selectedModeName').textContent='SELECT A GAMEMODE';$('selectedModeDesc').textContent='Choose a mode below to get started.';return}const chosen=mode==='box'?'box':'br';selectedMode=chosen;selectMode(chosen);if(window.PixelProgress)window.PixelProgress.startMatch();cl();$('en').classList.add('h');$('mn').classList.add('h');const go=()=>{G={P:[],L:[],W:[],bl:[],fx:[],feed:[],B:[],eb:[],T:0,run:1,over:0,buildMode:false,buildPiece:'wall',edit:null,preventFireUntil:0,mode:chosen,box:chosen==='box'?{round:1,playerScore:0,botScore:0,totalKills:0,botName:NM[R()*NM.length|0],roundEndedAt:null,roundWinner:'',transitioning:false}:null,z:{x:C,y:C,r:IR+60,sx:C,sy:C,sr:IR+60,tx:C,ty:C,tr:720,ph:0,t:40,shr:0},tip:MOB?'Loot nearby · Use the touch buttons to build and heal':'Loot near your spawn. F = wall, H = medkit, J = shield',tt:5};
 if(chosen==='box'){startBoxRound();Z=Math.min(1,Math.min(innerWidth/1320,innerHeight/820));cam.x=G.u.x-innerWidth/2/Z;cam.y=G.u.y-innerHeight/2/Z;ms.x=innerWidth/2;ms.y=innerHeight/2;$('hud').classList.remove('h');$('mb').style.display=MOB?'grid':'none';syncMobileOrientation();gp(1);last=performance.now();requestAnimationFrame(loop);return}
 const botNames=NM.slice();for(let i=botNames.length-1;i>0;i--){const j=R()*(i+1)|0;[botNames[i],botNames[j]]=[botNames[j],botNames[i]]}
 const sl=[...Array(20).keys()].sort(()=>R()-.5),u=mk('You',0,0,0,SK[S.skin][1]);u.hat=S.hat;u.mh=u.hp=100+10*S.up[0];u.sp=170*(1+.04*S.up[1]);u.dm=1+.06*S.up[2];G.P.push(u);G.u=u;
@@ -1056,6 +1126,7 @@ for(const p of POI){const count=p[4]>7?5:3;for(let i=0;i<count;i++){const [x,y]=
 // Guarantee each of the five new weapons can be found in every Battle Royale match, alongside a couple of healing items.
 for(let t=7;t<=11;t++){const [x,y]=lootSpot(110);G.L.push({x,y,k:'g',t,r:tierRoll(),ok:0,dropped:false,createdAt:G.T})}
 for(let i=0;i<2;i++){const [x,y]=lootSpot(110);G.L.push({x,y,k:'j',ok:0,dropped:false,createdAt:G.T})}
+initPulseBosses();
 $('hud').classList.remove('h');$('mb').style.display=MOB?'grid':'none';syncMobileOrientation();gp(1);last=performance.now();requestAnimationFrame(loop)};
 go();window._f=0}
 function menu(){$('en').classList.add('h');$('hud').classList.add('h');$('mn').classList.remove('h');document.documentElement.classList.remove('rotate-required','mobile-portrait');resetTouchPads();ui()}
