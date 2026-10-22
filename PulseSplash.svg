@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pulse Splash">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#182846"/><stop offset=".58" stop-color="#29205a"/><stop offset="1" stop-color="#101326"/></linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#67f8ff"/><stop offset=".5" stop-color="#c86aff"/><stop offset="1" stop-color="#7e4dff"/></linearGradient>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="64" cy="64" r="49" stroke="#9d60ff" stroke-width="2" stroke-dasharray="4 7" opacity=".7"/>
+    <path d="M64 9 76 28 98 22 96 45 117 58 101 74 108 96 84 98 72 119 55 103 33 109 30 86 10 74 26 57 19 35 43 32Z" fill="url(#body)" stroke="#77edff" stroke-width="3"/>
+    <path d="M64 24 75 43 95 47 82 63 84 83 64 75 44 83 46 63 33 47 53 43Z" fill="#151d3c" stroke="#ac72ff" stroke-width="2.5"/>
+    <path d="M64 35 73 51 90 55 77 67 78 82 64 75 50 82 51 67 38 55 55 51Z" fill="url(#core)" stroke="#e2fbff" stroke-width="2" filter="url(#glow)"/>
+    <path d="M64 45 69 58 81 64 68 68 64 81 59 68 47 64 59 58Z" fill="#f7fbff"/>
+    <path d="M18 20 29 25 33 16M97 12 102 25 115 27M104 103 94 101 90 113M22 95 31 89 35 101" stroke="#ff64df" stroke-width="4"/>
+    <path d="M16 49 25 53M103 78 114 74M49 112 53 103" stroke="#6df5ff" stroke-width="4"/>
+  </g>
+</svg>
