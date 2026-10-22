@@ -111,7 +111,7 @@ function frame(now){
  if(!active)return;const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),dpr=Math.min(1.5,window.devicePixelRatio||1);
  if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);canvas.style.width=w+'px';canvas.style.height=h+'px'}
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
- const elapsed=Math.max(0,(now-startAt)/1000),ended=elapsed>=DURATION,t=Math.min(DURATION,elapsed);let scene=7;for(let i=0;i<CUTS.length-1;i++)if(t>=CUTS[i]&&t<CUTS[i+1]){scene=i;break}
+ const elapsed=Math.max(0,(now-startAt)/1000);if(elapsed>=DURATION){closePulseTrailer();return}const ended=false,t=elapsed;let scene=7;for(let i=0;i<CUTS.length-1;i++)if(t>=CUTS[i]&&t<CUTS[i+1]){scene=i;break}
  const beginning=CUTS[scene],end=CUTS[scene+1],local=t-beginning,duration=end-beginning,mid=w*.5;
  if(scene!==lastScene){lastScene=scene;cue(scene)}if(scene===3&&local>2.15&&!impactPlayed){impactPlayed=true;cue(scene,true)}
  if(scene===5)drawCore(w,h,local);
