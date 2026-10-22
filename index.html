@@ -1506,7 +1506,7 @@ function startOnline(mode) {
   mpOnline = true;
   play(mpMode);
   mpConnect({ mode: mpMode });
-  mpSetStatus("Searching for a player · bots are active until someone joins.");
+  mpSetStatus("");
 }
 async function createPrivateRoom() {
   if (MP_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
@@ -1659,14 +1659,14 @@ function mpConnect(params) {
   }
   mpSocket.onopen = function () {
     if (mpPrivate) mpSetLobbyStatus("Connected · syncing lobby…");
-    else mpSetStatus("Connected · searching for an opponent. Bots remain active.");
+    else mpSetStatus("Connected.");
   };
   mpSocket.onmessage = function (event) {
     let packet;
     try { packet = JSON.parse(event.data); } catch (_) { return; }
     if (packet.type === "queue_waiting") {
       mpClientId = packet.playerId || mpClientId;
-      mpSetStatus("Searching for an opponent · bots are active.");
+      mpSetStatus("");
     } else if (packet.type === "match_found") {
       mpClientId = packet.playerId || mpClientId;
       mpOpponentId = packet.opponentId || mpOpponentId;
@@ -1735,7 +1735,7 @@ function mpConnect(params) {
     mpSetStatus("Multiplayer connection failed. Check that the Worker is deployed and MP_WORKER_URL is correct.");
   };
   mpSocket.onclose = function () {
-    if (mpOnline && G && G.run) mpSetStatus("Disconnected from server · bots remain active.");
+    if (mpOnline && G && G.run) mpSetStatus("Disconnected from server.");
     if (mpRemote) { mpRemote.bot = 1; mpRemote.n = NM[R() * NM.length | 0]; mpRemote.mpId = ""; }
   };
 }
