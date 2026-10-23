@@ -8,7 +8,7 @@ The Worker project at `C:\Users\crypt\pixelroyal-multiplayer` already has Wrangl
 
 ```powershell
 cd C:\Users\crypt\pixelroyal-multiplayer
-curl.exe -L "https://raw.githubusercontent.com/crypticfn2012-jpg/PixelRoyale/main/multiplayer/src/index.js" -o src/index.js
+curl.exe -L "https://raw.githubusercontent.com/crypticfn2012-jpg/PixelRoyal/main/multiplayer/src/index.js" -o src/index.js
 npm run dev
 ```
 
