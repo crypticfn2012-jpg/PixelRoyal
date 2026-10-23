@@ -75,6 +75,10 @@ function drawMap(w,h,sec,zoom,cxw,cyw,rot){
  const atm=ctx.createRadialGradient(w*.5,h*.48,Math.min(w,h)*.05,w*.5,h*.48,Math.max(w,h)*.75);atm.addColorStop(0,'rgba(44,185,255,.02)');atm.addColorStop(.55,'rgba(10,14,35,.04)');atm.addColorStop(1,'rgba(1,3,10,.7)');ctx.fillStyle=atm;ctx.fillRect(0,0,w,h);
  ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle='#6cefff';ctx.lineWidth=1;for(let i=0;i<9;i++){const yy=(h*.12+i*h*.096+sec*8)%(h*.92);ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w*.14,yy);ctx.moveTo(w*.86,yy);ctx.lineTo(w,yy);ctx.stroke()}ctx.restore();
 }
+function projectMapPoint(w,h,zoom,cxw,cyw,rot,x,y){
+ const base=Math.min(w/W,h/W)*zoom,dx=(x-cxw)*base,dy=(y-cyw)*base,a=rot||0;
+ return {x:w*.5+dx*Math.cos(a)-dy*Math.sin(a),y:h*.5+dx*Math.sin(a)+dy*Math.cos(a),scale:base};
+}
 function drawPlayer(x,y,angle,color,hat,gun,walk,scale){
  const old=cx;try{cx=ctx;ctx.save();ctx.translate(x+Math.sin(walk*8)*1.1,y+Math.cos(walk*7)*1.4);ctx.scale(scale||1,scale||1);body(color,hat,angle,gun,0,0);ctx.restore()}catch(_){}finally{cx=old}
 }
@@ -114,7 +118,12 @@ function frame(now){
  const elapsed=Math.max(0,(now-startAt)/1000);if(elapsed>=DURATION){closePulseTrailer();return}const ended=false,t=elapsed;let scene=7;for(let i=0;i<CUTS.length-1;i++)if(t>=CUTS[i]&&t<CUTS[i+1]){scene=i;break}
  const beginning=CUTS[scene],end=CUTS[scene+1],local=t-beginning,duration=end-beginning,mid=w*.5;
  if(scene!==lastScene){lastScene=scene;cue(scene)}if(scene===3&&local>2.15&&!impactPlayed){impactPlayed=true;cue(scene,true)}
- if(scene===5)drawCore(w,h,local);
+ if(scene===5){
+  drawCore(w,h,local);
+  const a=clamp(local/.65),b=clamp((local-2.1)/.7);
+  text(ctx,'THE ISLAND RUNS ON THIS ENERGY',mid,h*.12,Math.min(22,w*.022),a*(1-clamp((local-5.2)/.6)),'#d8faff',2.1);
+  if(local>2)text(ctx,'THEY ARE HARVESTING IT',mid,h*.84,Math.min(20,w*.02),b,'#ff9be6',2.4);
+ }
  else{
   let camera={x:C,y:C,zoom:1.1,rot:Math.sin(t*.18)*.012};
   if(scene===0)camera={x:C+Math.sin(local*.4)*26,y:C+Math.cos(local*.35)*20,zoom:1.04+local*.045,rot:Math.sin(local*.3)*.018};
@@ -126,25 +135,45 @@ function frame(now){
   drawMap(w,h,t,camera.zoom,camera.x,camera.y,camera.rot);
   if(scene===2){
    const paths=[[-285,45,1,'#e74c3c',0,17],[-155,112,2,'#3498db',3,15],[-40,-36,7,'#9b59b6',4,14],[112,75,0,'#1abc9c',7,18],[260,-20,10,'#f1c40f',9,16]];
-   paths.forEach((p,i)=>{const x=1680+p[0]+local*(i%2?18:-14),y=1600+p[1]+Math.sin(local*2+i)*17;drawPlayer(x,y,Math.sin(local*1.7+i)*.3,p[3],p[4],p[5],local+i*.3,1.3)});
+   paths.forEach((p,i)=>{
+    const wx=1680+p[0]+local*(i%2?18:-14),wy=1600+p[1]+Math.sin(local*2+i)*17;
+    const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);
+    drawPlayer(q.x,q.y,Math.sin(local*1.7+i)*.3,p[3],p[4],p[5],local+i*.3,Math.max(.55,q.scale*1.05));
+   });
    ctx.save();ctx.globalAlpha=.6+.2*Math.sin(local*3);ctx.strokeStyle='#52eaff';ctx.lineWidth=1.5;ctx.setLineDash([3,7]);ctx.beginPath();ctx.arc(mid,h*.52,Math.min(w,h)*.22,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
    text(ctx,'THE ISLAND IS CHANGING',mid,h*.13,Math.min(24,w*.023),Math.min(1,local*1.3),'#c8f8ff',2.2);
   }
   if(scene===3||scene===4){
-   const ix=CRASH.x,iy=CRASH.y;
-   for(let i=0;i<16;i++){const p=(local*.23+i/16)%1,xx=ix+(i%4-1.5)*100+Math.sin(t*2+i)*9,yy=iy+p*175;ctx.save();ctx.globalAlpha=(1-p)*.35;ctx.fillStyle=i%3?'#8c9bae':'#d2e5f2';ctx.beginPath();ctx.arc(xx,yy,8+p*20,0,Math.PI*2);ctx.fill();ctx.restore()}
+   const ix=CRASH.x,iy=CRASH.y,cr=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix,iy);
+   for(let i=0;i<22;i++){
+    const p=(local*.31+i/22)%1,wx=ix+(i%5-2)*76+Math.sin(t*2+i)*12,wy=iy+p*150;
+    const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);
+    ctx.save();ctx.globalAlpha=(1-p)*.42;ctx.fillStyle=i%3?'#9aaec5':'#d2faff';ctx.beginPath();ctx.arc(q.x,q.y,Math.max(1,(5+p*13)*q.scale),0,Math.PI*2);ctx.fill();ctx.restore()
+   }
    if(scene===3){
-    const p=clamp(local/2.7),x=ix+470*(1-p),y=iy-400*(1-p);drawCapsule(x,y,-.6*(1-p),p>.94,1.12,t);
+    const p=clamp(local/2.7),wx=ix+470*(1-p),wy=iy-400*(1-p),q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);
+    drawCapsule(q.x,q.y,-.6*(1-p),p>.94,Math.max(.35,q.scale*1.12),t);
     if(local>2.4){const k=clamp((local-2.4)/.5);ctx.save();ctx.globalAlpha=(1-k)*.8;const g=ctx.createRadialGradient(mid,h*.48,1,mid,h*.48,h*.7);g.addColorStop(0,'#f1fdff');g.addColorStop(.25,'rgba(68,237,255,.65)');g.addColorStop(1,'rgba(255,72,210,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.restore()}
-    text(ctx,'UNIDENTIFIED OBJECT',mid,h*.14,Math.min(20,w*.019),Math.min(1,local*.8),'#ccefff',3);
+    text(ctx,'SIGNAL LOST',mid,h*.13,Math.min(18,w*.019),clamp(local*1.2),'#b8d9e9',3);
+    text(ctx,'IMPACT DETECTED',mid,h*.18,Math.min(13,w*.013),clamp((local-1.7)*1.5),'#55edff',3);
    }else{
-    drawCapsule(ix,iy,0,true,1.12,t);const emerge=clamp(local/.95);
-    drawBoss(ix-118,iy+65-emerge*55,0,1.18,t);drawBoss(ix,iy+60-emerge*49,1,1.18,t);drawBoss(ix+118,iy+66-emerge*53,2,1.18,t);
-    if(local>1.05)text(ctx,'THEY HAVE ARRIVED',mid,h*.14,Math.min(28,w*.027),clamp((local-1.05)*1.8),'#ff8ce7',2.2);
+    const q0=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix,iy);
+    drawCapsule(q0.x,q0.y,0,true,Math.max(.35,q0.scale*1.12),t);const emerge=clamp(local/.95);
+    [-118,0,118].forEach((offset,i)=>{
+     const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix+offset,iy+65-emerge*(55+i%2*6));
+     drawBoss(q.x,q.y,i,Math.max(.45,q.scale*1.18),t);
+    });
+    if(local>.65){
+     text(ctx,'THE PULSE GUARDIANS',mid,h*.13,Math.min(25,w*.025),clamp((local-.65)*2),'#f1d9ff',2.3);
+     text(ctx,'THEY ARE TAKING THE CORE',mid,h*.19,Math.min(13,w*.014),clamp((local-1.45)*1.8),'#8defff',2);
+    }
     ctx.save();ctx.globalAlpha=.48+.24*Math.sin(t*4);ctx.strokeStyle='#ff4ecb';ctx.shadowColor='#ff4ecb';ctx.shadowBlur=20;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(mid,h*.57,Math.min(w,h)*.2,Math.min(w,h)*.07,0,0,Math.PI*2);ctx.stroke();ctx.restore();
    }
   }
-  if(scene===0)text(ctx,'A NEW SIGNAL HAS AWAKENED',mid,h*.82,Math.min(21,w*.021),Math.min(1,local*.7),'#c1e9ff',3);
+  if(scene===0){
+   text(ctx,'SOMETHING IS BURIED HERE',mid,h*.80,Math.min(23,w*.023),clamp(local*1.2),'#d8e9f5',2.5);
+   ctx.save();ctx.globalAlpha=.38+.2*Math.sin(t*2);ctx.strokeStyle='#49eaff';ctx.lineWidth=1.5;ctx.setLineDash([4,9]);ctx.beginPath();ctx.arc(mid,h*.53,Math.min(w,h)*(.09+local*.025),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  }
   if(scene===1){const intro=clamp(local/.6),outro=clamp((duration-local)/.42);flyText(ctx,'PIXELROYALE',mid,h*.44,Math.min(86,w*.09),local);text(ctx,'SEASON 1',mid,h*.55,Math.min(32,w*.033),intro*outro,'#58edff',8);ctx.save();ctx.globalAlpha=intro*outro*.75;ctx.fillStyle='#ff4ecb';ctx.fillRect(w*.36,h*.61,w*.28,2);ctx.restore()}
   if(scene===6){const a=clamp((local-.2)/.8),out=clamp((duration-local)/.45);text(ctx,'FIGHT FOR YOUR ISLAND',mid,h*.5,Math.min(48,w*.045),a*out,'#eafcff',3)}
   if(scene===7){
@@ -154,8 +183,13 @@ function frame(now){
    ctx.save();ctx.globalAlpha=(.3+.3*Math.sin(t*3))*p;ctx.fillStyle='#ff51d8';ctx.fillRect(w*.35,h*.77,w*.3,2);ctx.restore();
   }
  }
- const fadeIn=clamp(local/.48),fadeOut=(scene===7&&ended)?1:clamp((end-t)/.42),opacity=Math.min(fadeIn,fadeOut);if(opacity<1){ctx.fillStyle='rgba(0,0,0,'+(1-opacity)+')';ctx.fillRect(0,0,w,h)}
- ctx.save();ctx.globalAlpha=.11;for(let i=0;i<90;i++){const x=((i*197+Math.sin(t*1.8+i)*38)%w+w)%w,y=((i*113+Math.cos(t*1.25+i)*24)%h+h)%h;ctx.fillStyle=i%3?'#9beaff':'#ffb9e9';ctx.fillRect(x,y,1.2,1.2)}ctx.restore();
+ const fadeIn=clamp(local/.55),fadeOut=(scene===7&&ended)?1:clamp((end-t)/.5),opacity=Math.min(fadeIn,fadeOut);
+ if(opacity<1){ctx.fillStyle='rgba(0,0,0,'+(1-opacity)+')';ctx.fillRect(0,0,w,h)}
+ // Restrained cinematic letterbox, fine film grain and a subtle edge vignette keep the action readable.
+ ctx.save();ctx.fillStyle='#02050b';ctx.fillRect(0,0,w,Math.max(18,h*.075));ctx.fillRect(0,h-Math.max(18,h*.075),w,Math.max(18,h*.075));
+ const vignette=ctx.createRadialGradient(mid,h*.5,Math.min(w,h)*.2,mid,h*.5,Math.max(w,h)*.72);
+ vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.44)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+ ctx.globalAlpha=.045;for(let i=0;i<65;i++){const x=((i*197+Math.sin(t*1.8+i)*38)%w+w)%w,y=((i*113+Math.cos(t*1.25+i)*24)%h+h)%h;ctx.fillStyle=i%3?'#d9edff':'#ffb9e9';ctx.fillRect(x,y,1,1)}ctx.restore();
  const progress=document.querySelector('#pulseTrailerProgress i');if(progress)progress.style.width=(clamp(t/DURATION)*100)+'%';raf=requestAnimationFrame(frame);
 }
 window.watchPulseTrailer=watchPulseTrailer;window.closePulseTrailer=closePulseTrailer;
