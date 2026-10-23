@@ -1202,6 +1202,7 @@ function selectMode(mode){
   $('selectedModeName').textContent=title;
   $('selectedModeDesc').textContent=og?'Play the original build, with its classic interface and gameplay.':box?'A focused 1v1. First to five rounds wins.':'Drop in, gear up and be the last player standing.';
   $('playModeName').textContent=og?'PIXELROYALE OG':title;
+  $('mpStatus').textContent=og?'The original offline build. OG progress is saved separately on this device.':'PLAY starts matchmaking. Create a room to invite friends and play together.';
   [['optionBr','br'],['optionBox','box'],['optionOg','og']].forEach(([id,value])=>{
     const selected=selectedMode===value,el=$(id);
     el.classList.toggle('active',selected);
@@ -1233,6 +1234,7 @@ function exitOGMode(){
   $('selectedModeName').textContent='SELECT A GAMEMODE';
   $('selectedModeDesc').textContent='Choose a mode below to get started.';
   $('playModeName').textContent='CHOOSE MODE';
+  $('mpStatus').textContent='PLAY starts matchmaking. Create a room to invite friends and play together.';
   [['optionBr','br'],['optionBox','box'],['optionOg','og']].forEach(([id])=>{
     $(id).classList.remove('active');
     $(id).querySelector('span').textContent='SELECT';
