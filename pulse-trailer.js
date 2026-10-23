@@ -99,6 +99,44 @@ function drawBoss(x,y,type,scale,sec){
  else if(type===1){ctx.beginPath();ctx.moveTo(-30,-18);ctx.lineTo(-8,-30);ctx.lineTo(25,-23);ctx.lineTo(34,-4);ctx.lineTo(22,24);ctx.lineTo(-10,28);ctx.lineTo(-35,8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#3b163c';ctx.fillRect(-22,-13,45,6);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-24,3);ctx.lineTo(25,-5);ctx.lineTo(16,7);ctx.lineTo(-18,14);ctx.closePath();ctx.fill();ctx.fillStyle='#f6ebff';ctx.fillRect(12,-1,9,9);ctx.fillStyle='#152034';ctx.fillRect(-32,13,15,26);ctx.fillRect(15,11,15,26)}
  else{ctx.beginPath();ctx.moveTo(0,-35);ctx.lineTo(28,-13);ctx.lineTo(25,16);ctx.lineTo(0,31);ctx.lineTo(-25,16);ctx.lineTo(-28,-13);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#bdb2ff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,39,39,sec*.4,0,Math.PI*2);ctx.stroke();ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(15,0);ctx.lineTo(0,15);ctx.lineTo(-15,0);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(-3,-4,6,8);ctx.fillStyle='#15172a';ctx.fillRect(-16,22,12,19);ctx.fillRect(4,22,12,19)}ctx.shadowBlur=0;ctx.restore();
 }
+function drawCrashScene(w,h,local,t){
+ const mid=w*.5,ground=h*.79;
+ // High atmosphere above the island: readable sky, distant island silhouette and cloud bands.
+ const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#030817');sky.addColorStop(.38,'#101e3c');sky.addColorStop(.68,'#24445e');sky.addColorStop(1,'#080f1d');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+ for(let i=0;i<95;i++){const x=(i*137.7%w),y=(i*71.3%(h*.67));ctx.globalAlpha=.18+(i%4)*.08;ctx.fillStyle=i%5===0?'#ffb5e8':'#c4f7ff';ctx.fillRect(x,y,1+(i%3),1+(i%2))}
+ ctx.globalAlpha=1;
+ // Atmospheric cloud banks move across the horizon.
+ for(let layer=0;layer<3;layer++){ctx.save();ctx.globalAlpha=.12+layer*.035;ctx.fillStyle=layer===1?'#72b8d4':'#667eac';for(let i=0;i<11;i++){const x=((i*w/8+Math.sin(t*.14+layer+i)*w*.04)% (w*1.3))-w*.15,y=h*(.48+layer*.085)+Math.sin(i*2+layer)*h*.025;ctx.beginPath();ctx.ellipse(x,y,w*(.09+(i%3)*.025),h*(.018+(i%2)*.012),0,0,Math.PI*2);ctx.fill()}ctx.restore()}
+ // Island ridge and the secret research facility lights.
+ ctx.fillStyle='#060b17';ctx.beginPath();ctx.moveTo(0,ground+h*.04);for(let i=0;i<=12;i++){const x=i*w/12;ctx.lineTo(x,ground-h*(.045+(i%4)*.025))}ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fill();
+ ctx.save();ctx.globalAlpha=.7;for(let i=0;i<14;i++){const x=w*(.12+i*.058),y=ground-h*(.025+(i%3)*.014);ctx.fillStyle=i%3?'#3de9ff':'#ff50d7';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=8;ctx.fillRect(x,y,3,2)}ctx.restore();
+ const impact=clamp((local-2.85)/.8),flight=clamp(local/3.35),x0=w*1.12,y0=-h*.12,xi=w*.47,yi=ground-h*.02;
+ const px=x0+(xi-x0)*easeOut(flight),py=y0+(yi-y0)*easeOut(flight);
+ // Long, layered re-entry trail behind the pod.
+ if(local<3.5){ctx.save();ctx.globalCompositeOperation='screen';for(let i=0;i<13;i++){const p=i/13,tx=px+(1-p)*w*.26,ty=py-(1-p)*h*.22;ctx.globalAlpha=(1-p)*(.17+flight*.45);ctx.strokeStyle=i%3===0?'#ff54ca':i%3===1?'#5ceeff':'#fff2db';ctx.lineWidth=(1-p)*Math.min(w,h)*.035+1;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+(1-p)*w*.09,ty-(1-p)*h*.09);ctx.stroke()}ctx.restore()}
+ // The impact bloom and expanding ground shockwave.
+ if(local>2.65){const p=clamp((local-2.65)/1.15);ctx.save();ctx.globalCompositeOperation='screen';const g=ctx.createRadialGradient(xi,yi,2,xi,yi,Math.max(w,h)*(.08+p*.55));g.addColorStop(0,'rgba(255,249,220,'+(.9*(1-p*.65))+')');g.addColorStop(.12,'rgba(255,104,55,'+(.65*(1-p))+')');g.addColorStop(.38,'rgba(255,51,180,'+(.22*(1-p))+')');g.addColorStop(1,'rgba(60,228,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#65f2ff';ctx.globalAlpha=(1-p)*.8;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(xi,yi,w*(.035+p*.5),h*(.008+p*.095),0,0,Math.PI*2);ctx.stroke();ctx.restore()}
+ // Capsule body is intentionally large and side-on so the crash reads instantly.
+ if(local<3.45){
+  const angle=.52+flight*.23;
+  ctx.save();ctx.translate(px,py);ctx.rotate(angle);const scale=Math.min(w/1000,h/650)*1.1;ctx.scale(scale,scale);
+  ctx.globalCompositeOperation='screen';ctx.shadowColor='#ff7b4d';ctx.shadowBlur=32;
+  const flame=ctx.createLinearGradient(-180,0,-55,0);flame.addColorStop(0,'rgba(255,43,157,0)');flame.addColorStop(.35,'#ff4b93');flame.addColorStop(.72,'#ffb36a');flame.addColorStop(1,'#fff7d6');ctx.fillStyle=flame;ctx.beginPath();ctx.moveTo(-178,-7);ctx.lineTo(-82,-25);ctx.lineTo(-57,0);ctx.lineTo(-84,21);ctx.closePath();ctx.fill();ctx.globalCompositeOperation='source-over';
+  ctx.shadowColor='#47eaff';ctx.shadowBlur=16;ctx.fillStyle='#081321';ctx.strokeStyle='#a5f7ff';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-83,-27);ctx.lineTo(-52,-43);ctx.lineTo(56,-40);ctx.lineTo(91,-22);ctx.lineTo(104,0);ctx.lineTo(82,24);ctx.lineTo(42,38);ctx.lineTo(-52,34);ctx.lineTo(-86,13);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.shadowBlur=0;ctx.fillStyle='#19334b';ctx.beginPath();ctx.moveTo(-49,-28);ctx.lineTo(43,-27);ctx.lineTo(72,-13);ctx.lineTo(76,7);ctx.lineTo(42,24);ctx.lineTo(-46,22);ctx.lineTo(-65,8);ctx.closePath();ctx.fill();ctx.strokeStyle='#46eaff';ctx.lineWidth=2;ctx.stroke();
+  // Reinforced nose, observation window, hazard markings and stabilizer fins.
+  ctx.fillStyle='#b7f9ff';ctx.beginPath();ctx.ellipse(39,-3,18,10,-.12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff58d9';ctx.fillRect(-42,-4,21,7);ctx.fillRect(59,12,14,5);
+  ctx.fillStyle='#0d1b2c';ctx.strokeStyle='#ff6bdc';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-55,-30);ctx.lineTo(-86,-54);ctx.lineTo(-76,-10);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-48,28);ctx.lineTo(-80,49);ctx.lineTo(-72,10);ctx.closePath();ctx.fill();ctx.stroke();
+  for(let i=0;i<5;i++){ctx.fillStyle=i%2?'#ff5bce':'#8ff7ff';ctx.fillRect(-37+i*18,-35,9,3)}
+  ctx.restore();
+ }
+ // After impact, sparks and chunks arc away from the crash site.
+ if(local>2.7){const p=clamp((local-2.7)/2.4);for(let i=0;i<34;i++){const a=i*2.399,toss=p*(55+(i%7)*13),sx=xi+Math.cos(a)*toss,sy=yi+Math.sin(a)*toss*.42+p*p*h*.12;ctx.save();ctx.globalAlpha=(1-p)*.95;ctx.fillStyle=i%4===0?'#ff55d7':i%3===0?'#55efff':'#ffb36b';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=10;ctx.beginPath();ctx.arc(sx,sy,1+(i%3)*1.4,0,Math.PI*2);ctx.fill();ctx.restore()}}
+ const fade=clamp(local/.6);text(ctx,'AN UNIDENTIFIED POD BREAKS ATMOSPHERE',mid,h*.13,Math.min(21,w*.021),fade,'#eafaff',2);
+ if(local>2.6)text(ctx,'IMPACT AT SIGNAL RIDGE',mid,h*.2,Math.min(17,w*.018),clamp((local-2.6)*2),'#ffb7e9',2.2);
+ ctx.save();ctx.globalAlpha=.7;ctx.fillStyle='#9eefff';ctx.font='700 11px "Segoe UI",Arial,sans-serif';ctx.textAlign='left';ctx.fillText('PIXELROYALE // INCIDENT 01',w*.055,h*.91);ctx.restore();
+}
 function drawCore(w,h,sec){
  ctx.fillStyle='#02040b';ctx.fillRect(0,0,w,h);const cave=ctx.createRadialGradient(w*.5,h*.48,20,w*.5,h*.48,Math.max(w,h)*.74);cave.addColorStop(0,'#112743');cave.addColorStop(.38,'#081427');cave.addColorStop(1,'#010208');ctx.fillStyle=cave;ctx.fillRect(0,0,w,h);
  ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle='#233c60';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,h*.16);ctx.lineTo(w*.13,h*.24);ctx.lineTo(w*.21,h*.17);ctx.lineTo(w*.32,h*.22);ctx.lineTo(w*.43,h*.11);ctx.lineTo(w*.5,h*.16);ctx.lineTo(w*.63,h*.1);ctx.lineTo(w*.74,h*.2);ctx.lineTo(w*.86,h*.14);ctx.lineTo(w,h*.24);ctx.stroke();ctx.beginPath();ctx.moveTo(0,h*.87);ctx.lineTo(w*.16,h*.77);ctx.lineTo(w*.27,h*.88);ctx.lineTo(w*.43,h*.82);ctx.lineTo(w*.56,h*.91);ctx.lineTo(w*.71,h*.81);ctx.lineTo(w*.84,h*.87);ctx.lineTo(w,h*.8);ctx.stroke();
@@ -132,7 +170,8 @@ function frame(now){
   if(scene===3||scene===4)camera={x:1810+Math.sin(local*.26)*25,y:1505+Math.cos(local*.25)*18,zoom:2.62+Math.sin(local*.28)*.07,rot:-.012+Math.sin(local*.2)*.018};
   if(scene===6)camera={x:C,y:C,zoom:1.12+Math.sin(local*.5)*.04,rot:-.018};
   if(scene===7)camera={x:C,y:C,zoom:1.05,rot:0};
-  drawMap(w,h,t,camera.zoom,camera.x,camera.y,camera.rot);
+  if(scene===3)drawCrashScene(w,h,local,t);
+  else drawMap(w,h,t,camera.zoom,camera.x,camera.y,camera.rot);
   if(scene===2){
    const paths=[[-285,45,1,'#e74c3c',0,17],[-155,112,2,'#3498db',3,15],[-40,-36,7,'#9b59b6',4,14],[112,75,0,'#1abc9c',7,18],[260,-20,10,'#f1c40f',9,16]];
    paths.forEach((p,i)=>{
@@ -143,32 +182,14 @@ function frame(now){
    ctx.save();ctx.globalAlpha=.6+.2*Math.sin(local*3);ctx.strokeStyle='#52eaff';ctx.lineWidth=1.5;ctx.setLineDash([3,7]);ctx.beginPath();ctx.arc(mid,h*.52,Math.min(w,h)*.22,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
    text(ctx,'THE ISLAND IS CHANGING',mid,h*.13,Math.min(24,w*.023),Math.min(1,local*1.3),'#c8f8ff',2.2);
   }
-  if(scene===3||scene===4){
-   const ix=CRASH.x,iy=CRASH.y,cr=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix,iy);
-   for(let i=0;i<22;i++){
-    const p=(local*.31+i/22)%1,wx=ix+(i%5-2)*76+Math.sin(t*2+i)*12,wy=iy+p*150;
-    const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);
-    ctx.save();ctx.globalAlpha=(1-p)*.42;ctx.fillStyle=i%3?'#9aaec5':'#d2faff';ctx.beginPath();ctx.arc(q.x,q.y,Math.max(1,(5+p*13)*q.scale),0,Math.PI*2);ctx.fill();ctx.restore()
-   }
-   if(scene===3){
-    const p=clamp(local/2.7),wx=ix+470*(1-p),wy=iy-400*(1-p),q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);
-    drawCapsule(q.x,q.y,-.6*(1-p),p>.94,Math.max(.35,q.scale*1.12),t);
-    if(local>2.4){const k=clamp((local-2.4)/.5);ctx.save();ctx.globalAlpha=(1-k)*.8;const g=ctx.createRadialGradient(mid,h*.48,1,mid,h*.48,h*.7);g.addColorStop(0,'#f1fdff');g.addColorStop(.25,'rgba(68,237,255,.65)');g.addColorStop(1,'rgba(255,72,210,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.restore()}
-    text(ctx,'SIGNAL LOST',mid,h*.13,Math.min(18,w*.019),clamp(local*1.2),'#b8d9e9',3);
-    text(ctx,'IMPACT DETECTED',mid,h*.18,Math.min(13,w*.013),clamp((local-1.7)*1.5),'#55edff',3);
-   }else{
-    const q0=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix,iy);
-    drawCapsule(q0.x,q0.y,0,true,Math.max(.35,q0.scale*1.12),t);const emerge=clamp(local/.95);
-    [-118,0,118].forEach((offset,i)=>{
-     const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix+offset,iy+65-emerge*(55+i%2*6));
-     drawBoss(q.x,q.y,i,Math.max(.45,q.scale*1.18),t);
-    });
-    if(local>.65){
-     text(ctx,'THE PULSE GUARDIANS',mid,h*.13,Math.min(25,w*.025),clamp((local-.65)*2),'#f1d9ff',2.3);
-     text(ctx,'THEY ARE TAKING THE CORE',mid,h*.19,Math.min(13,w*.014),clamp((local-1.45)*1.8),'#8defff',2);
-    }
-    ctx.save();ctx.globalAlpha=.48+.24*Math.sin(t*4);ctx.strokeStyle='#ff4ecb';ctx.shadowColor='#ff4ecb';ctx.shadowBlur=20;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(mid,h*.57,Math.min(w,h)*.2,Math.min(w,h)*.07,0,0,Math.PI*2);ctx.stroke();ctx.restore();
-   }
+  if(scene===4){
+   const ix=CRASH.x,iy=CRASH.y;
+   for(let i=0;i<22;i++){const p=(local*.31+i/22)%1,wx=ix+(i%5-2)*76+Math.sin(t*2+i)*12,wy=iy+p*150,q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,wx,wy);ctx.save();ctx.globalAlpha=(1-p)*.42;ctx.fillStyle=i%3?'#9aaec5':'#d2faff';ctx.beginPath();ctx.arc(q.x,q.y,Math.max(1,(5+p*13)*q.scale),0,Math.PI*2);ctx.fill();ctx.restore()}
+   const q0=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix,iy);
+   drawCapsule(q0.x,q0.y,0,true,Math.max(.35,q0.scale*1.12),t);const emerge=clamp(local/.95);
+   [-118,0,118].forEach((offset,i)=>{const q=projectMapPoint(w,h,camera.zoom,camera.x,camera.y,camera.rot,ix+offset,iy+65-emerge*(55+i%2*6));drawBoss(q.x,q.y,i,Math.max(.45,q.scale*1.18),t)});
+   if(local>.65){text(ctx,'THE PULSE GUARDIANS',mid,h*.13,Math.min(25,w*.025),clamp((local-.65)*2),'#f1d9ff',2.3);text(ctx,'THEY ARE TAKING THE CORE',mid,h*.19,Math.min(13,w*.014),clamp((local-1.45)*1.8),'#8defff',2)}
+   ctx.save();ctx.globalAlpha=.48+.24*Math.sin(t*4);ctx.strokeStyle='#ff4ecb';ctx.shadowColor='#ff4ecb';ctx.shadowBlur=20;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(mid,h*.57,Math.min(w,h)*.2,Math.min(w,h)*.07,0,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
   if(scene===0){
    text(ctx,'SOMETHING IS BURIED HERE',mid,h*.80,Math.min(23,w*.023),clamp(local*1.2),'#d8e9f5',2.5);
