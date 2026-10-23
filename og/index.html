@@ -36,7 +36,13 @@ h1{font:900 clamp(34px,9vw,74px)/.92 "Arial Black",Impact,sans-serif;text-align:
 #tip{bottom:84px;left:50%;transform:translateX(-50%);text-shadow:2px 2px #000;font-size:15px;white-space:nowrap}
 #pa{top:10px;right:10px;min-width:0!important;padding:6px 12px!important;font-size:12px!important;pointer-events:auto}
 #mb{display:none;bottom:90px;right:12px;flex-direction:column;gap:8px;pointer-events:auto}#mb .b{min-width:0;padding:11px 12px;opacity:.85;font-size:12px}
+
+#ogMainGameButton{position:fixed;z-index:99999;top:12px;left:12px;display:flex;align-items:center;gap:9px;min-height:42px;padding:0 15px;border:1px solid rgba(255,196,111,.78);border-radius:9px;background:linear-gradient(145deg,rgba(20,29,43,.97),rgba(8,14,23,.97));box-shadow:0 5px 22px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);color:#ffe0ac;font:900 10px/1 Inter,"Segoe UI",Arial,sans-serif;letter-spacing:.12em;cursor:pointer}
+#ogMainGameButton span{font-size:20px;line-height:1;color:#ffc46f}
+#ogMainGameButton:hover{border-color:#ffe0ac;background:linear-gradient(145deg,#29364a,#101b2b)}
+@media(max-width:620px){#ogMainGameButton{top:8px;left:8px;min-height:38px;padding:0 11px;font-size:9px}}
 </style></head><body>
+<button id="ogMainGameButton" type="button" onclick="window.location.href='https://crypticfn2012-jpg.github.io/PixelRoyale/'" aria-label="Return to the main PixelRoyale game"><span aria-hidden="true">←</span> MAIN GAME</button>
 <canvas id="g"></canvas>
 <div id="ld" class="s"><svg width="110" viewBox="0 0 22 14" shape-rendering="crispEdges"><path fill="#ff9f1c" d="M1 2h16v2h3v2h-5v2h-3v2h2v2H6v-2h2V8H5V6H1z"/><path fill="#ffd447" d="M1 2h16v1H1z"/></svg>
 <span class="sp" style="--x:-20px;margin-top:-40px"></span><span class="sp" style="--x:25px;animation-delay:.4s;margin-top:-40px"></span>
@@ -271,4 +277,9 @@ loadS();
 S.own=SK.map((_,i)=>i==0||S.own[i]?1:0);S.oh=HT.map((_,i)=>i==0||S.oh[i]?1:0);S.ot=TR.map((_,i)=>i==0||S.ot[i]?1:0);setInterval(()=>{if(!document.hidden){S.play++;if(S.play%20==0)save();ui()}},1000);try{user=await CG.user.getUser();CG.user.addAuthListener(u=>{user=u;loadS();save();ui()})}catch(e){}
 buildMap();while(performance.now()-t0<2400)await new Promise(r=>setTimeout(r,50));clearInterval(iv);bar.style.width='100%';await new Promise(r=>setTimeout(r,250));
 try{CG.game.loadingStop()}catch(e){}$('ld').classList.add('h');$('mn').classList.remove('h');ui();requestAnimationFrame(mloop)})();
-</script></body></html>
+</script>
+<script>
+/* Browsers require a user gesture before fullscreen can be requested. */
+(function(){let requested=false;function requestGameFullscreen(){if(requested||document.fullscreenElement)return;requested=true;const root=document.documentElement;const request=root.requestFullscreen||root.webkitRequestFullscreen;if(request){try{const result=request.call(root);if(result&&result.catch)result.catch(function(){requested=false;});}catch(_){requested=false;}}}window.addEventListener('pointerdown',requestGameFullscreen,{once:true,capture:true});window.addEventListener('keydown',requestGameFullscreen,{once:true,capture:true});document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement)requested=false;});document.addEventListener('webkitfullscreenchange',function(){if(!document.webkitFullscreenElement)requested=false;});})();
+</script>
+</body></html>
