@@ -1,4 +1,4 @@
-/* PixelRoyal Season 1: Pulse — 35-second in-game cinematic.
+/* PixelRoyale Season 1: Pulse — 35-second in-game cinematic.
    Uses the game's existing map, player/cosmetic renderer and logo assets. */
 (function(){
 'use strict';
@@ -145,12 +145,12 @@ function frame(now){
    }
   }
   if(scene===0)text(ctx,'A NEW SIGNAL HAS AWAKENED',mid,h*.82,Math.min(21,w*.021),Math.min(1,local*.7),'#c1e9ff',3);
-  if(scene===1){const intro=clamp(local/.6),outro=clamp((duration-local)/.42);flyText(ctx,'PIXELROYAL',mid,h*.44,Math.min(86,w*.09),local);text(ctx,'SEASON 1',mid,h*.55,Math.min(32,w*.033),intro*outro,'#58edff',8);ctx.save();ctx.globalAlpha=intro*outro*.75;ctx.fillStyle='#ff4ecb';ctx.fillRect(w*.36,h*.61,w*.28,2);ctx.restore()}
+  if(scene===1){const intro=clamp(local/.6),outro=clamp((duration-local)/.42);flyText(ctx,'PIXELROYALE',mid,h*.44,Math.min(86,w*.09),local);text(ctx,'SEASON 1',mid,h*.55,Math.min(32,w*.033),intro*outro,'#58edff',8);ctx.save();ctx.globalAlpha=intro*outro*.75;ctx.fillStyle='#ff4ecb';ctx.fillRect(w*.36,h*.61,w*.28,2);ctx.restore()}
   if(scene===6){const a=clamp((local-.2)/.8),out=clamp((duration-local)/.45);text(ctx,'FIGHT FOR YOUR ISLAND',mid,h*.5,Math.min(48,w*.045),a*out,'#eafcff',3)}
   if(scene===7){
    const p=clamp(local/1.2),out=ended?1:clamp((duration-local)/.3);ctx.save();ctx.globalAlpha=.76;ctx.fillStyle='#02040b';ctx.fillRect(0,0,w,h);ctx.restore();
    const logo=document.getElementById('gameLogo');if(logo&&logo.complete&&logo.naturalWidth){const lw=Math.min(w*.42,450),lh=lw*(logo.naturalHeight/logo.naturalWidth);ctx.save();ctx.globalAlpha=p*out;ctx.shadowColor='#48edff';ctx.shadowBlur=23;ctx.drawImage(logo,mid-lw/2,h*.30-lh/2,lw,lh);ctx.restore()}
-   text(ctx,'PIXELROYAL:',mid,h*.57,Math.min(31,w*.033),p*out,'#eafcff',3);text(ctx,'PULSE',mid,h*.68,Math.min(92,w*.1),p*out,'#50edff',15);
+   text(ctx,'PIXELROYALE:',mid,h*.57,Math.min(31,w*.033),p*out,'#eafcff',3);text(ctx,'PULSE',mid,h*.68,Math.min(92,w*.1),p*out,'#50edff',15);
    ctx.save();ctx.globalAlpha=(.3+.3*Math.sin(t*3))*p;ctx.fillStyle='#ff51d8';ctx.fillRect(w*.35,h*.77,w*.3,2);ctx.restore();
   }
  }
