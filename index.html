@@ -1381,7 +1381,7 @@ $('x2').classList.remove('d');$('lg2').style.display=user||!(sdkReady&&CG&&CG.us
 $('x2').onclick=()=>ad('rewarded').then(ok=>{if(ok){S.coins+=G.c;save();$('x2').classList.add('d');$('ec').innerHTML+='<br>Doubled!'}else if(window.PixelProgress)window.PixelProgress.notify('No reward was granted. Ads may be unavailable or on cooldown.',false)});
 let last=0;function getRenderSize(){return{w:Math.max(1,Math.round(innerWidth)),h:Math.max(1,Math.round(innerHeight))}}
 let fpsWindowStart=0,fpsFrames=0,fpsLast=0;
-function loop(t){if(!G)return;const dt=Math.min(.05,(t-last)/1e3);last=t;if(G.run&&(!G.paused||mpOnline)){upd(dt)}if(S.settings.showFps){fpsFrames++;if(t-fpsWindowStart>=500){fpsLast=Math.round(fpsFrames*1000/Math.max(1,t-fpsWindowStart));fpsFrames=0;fpsWindowStart=t}$('fps').textContent='FPS: '+(fpsLast||'--');$('fps').classList.remove('h')}else $('fps').classList.add('h');draw();if(G.run)requestAnimationFrame(loop)}
+function loop(t){if(!G)return;const dt=Math.min(.05,(t-last)/1e3);last=t;if(G.run&&(!G.paused||mpOnline)){upd(dt)}if(S.settings.showFps){fpsFrames++;if(t-fpsWindowStart>=500){fpsLast=Math.round(fpsFrames*1000/Math.max(1,t-fpsWindowStart));fpsFrames=0;fpsWindowStart=t}$('fps').textContent='FPS: '+(fpsLast||'--');$('fps').classList.remove('h')}else $('fps').classList.add('h');draw();if(G.run&&(!G.paused||mpOnline))requestAnimationFrame(loop)}
 function drawWall(o,ghost=false,valid=true){
  cx.save();cx.globalAlpha=ghost?.38:1;
  cx.fillStyle='rgba(0,0,0,.25)';cx.fillRect(o.x+3,o.y+4,o.w,o.h);
