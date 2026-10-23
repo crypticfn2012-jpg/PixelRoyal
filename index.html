@@ -1243,9 +1243,12 @@ function exitOGMode(){
   try{ui()}catch(_){}
 }
 window.addEventListener('message',function(event){
-  if(event.origin!==location.origin||event.source!==$('ogModeFrame').contentWindow)return;
+  if(event.origin!==location.origin)return;
+  const frame=document.getElementById('ogModeFrame');
+  const layer=document.getElementById('ogModeLayer');
+  if(!frame||!layer||event.source!==frame.contentWindow)return;
   const data=event.data;
-  if(data&&data.type==='pixelroyale-og-gameplay'&&typeof data.active==='boolean'&&!$('ogModeLayer').classList.contains('h')){
+  if(data&&data.type==='pixelroyale-og-gameplay'&&typeof data.active==='boolean'&&!layer.classList.contains('h')){
     try{gp(data.active)}catch(_){}
   }
 });
