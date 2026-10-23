@@ -1044,13 +1044,26 @@ const PULSE_WEAPONS=[
 GUNS.push(...PULSE_WEAPONS);
 // ---------- PULSE BOSSES & SHARDS (Season 1) ----------
 const BOSS_CONFIG={
- enabled:true,bossesPerMatch:3,weaponDropChance:.15,shardPerBoss:true,soloScale:.78,
+ enabled:true,bossesPerMatch:3,weaponDropChance:.8,shardPerBoss:true,soloScale:.78,
  bossHealth:760,phaseTwoAt:.5,attackTelegraph:1.05,attackCooldown:3.25,attackDamage:11,attackRadius:104,
  shardCooldown:18,
  shards:[
-  {id:'overdrive',name:'Overdrive Shard',color:'#42efff',duration:6,cooldown:18,damageMult:1.22,speedMult:1.08,tradeoff:'Take 10% more damage while active'},
-  {id:'phase',name:'Phase Shard',color:'#ff4bc8',duration:2.2,cooldown:16,speedMult:1.65,tradeoff:'Weapon damage is reduced by 15% while active'},
-  {id:'aegis',name:'Aegis Shard',color:'#9d8cff',duration:5,cooldown:20,shield:24,tradeoff:'Movement speed is reduced by 12% while active'}
+  {id:'overdrive',name:'Overdrive Shard',color:'#42efff',duration:6,cooldown:18,damageMult:1.18,incomingDamageMult:1.1,tradeoff:'Deal 18% more damage, but take 10% more damage'},
+  {id:'phase',name:'Phase Shard',color:'#ff4bc8',duration:2.5,cooldown:16,speedMult:1.45,damageMult:.9,tradeoff:'Move 45% faster, deal 10% less damage'},
+  {id:'aegis',name:'Aegis Shard',color:'#9d8cff',duration:5,cooldown:20,shield:24,speedMult:.88,tradeoff:'Gain 24 shield, move 12% slower'},
+  {id:'vitalflow',name:'Vitalflow Shard',color:'#6cffb1',duration:8,cooldown:24,healPerSec:3,shieldPerSec:2,tradeoff:'Regenerate health and shield over 8 seconds'},
+  {id:'dashcore',name:'Dashcore Shard',duration:0,cooldown:0,color:'#d88bff',dashRecharge:5,tradeoff:'Hold up to 3 Pulse Dashes; recharge one every 5 seconds'},
+  {id:'pulseSurge',name:'Pulse Surge Shard',color:'#48eaff',duration:7,cooldown:21,pulseDamageMult:1.16,tradeoff:'Pulse weapons deal 16% more damage'},
+  {id:'quickcycle',name:'Quickcycle Shard',color:'#ffd166',duration:7,cooldown:20,reloadMult:.78,tradeoff:'Reload 22% faster'},
+  {id:'deadeye',name:'Deadeye Shard',color:'#ff9b68',duration:6,cooldown:20,accuracyMult:.72,tradeoff:'Weapon spread reduced by 28%'},
+  {id:'kinetic',name:'Kinetic Shard',color:'#70d9ff',duration:5,cooldown:19,speedMult:1.2,tradeoff:'Move 20% faster'},
+  {id:'bulwark',name:'Bulwark Shard',color:'#a6b6ff',duration:6,cooldown:22,incomingDamageMult:.82,tradeoff:'Take 18% less damage'},
+  {id:'capacitor',name:'Capacitor Shard',color:'#ffdf70',duration:6,cooldown:20,fireRateMult:.88,tradeoff:'Fire 12% faster'},
+  {id:'medwave',name:'Medwave Shard',color:'#8dffcf',duration:0,cooldown:24,instantHeal:30,tradeoff:'Instantly restore 30 health'},
+  {id:'shieldwave',name:'Shieldwave Shard',color:'#78caff',duration:0,cooldown:24,shield:35,tradeoff:'Instantly restore up to 35 shield'},
+  {id:'pulseguard',name:'Pulseguard Shard',color:'#bd8bff',duration:6,cooldown:22,pulseDamageMult:1.1,incomingDamageMult:.92,tradeoff:'Pulse weapons deal 10% more damage; take 8% less damage'},
+  {id:'riftstep',name:'Riftstep Shard',color:'#ff70d2',duration:0,cooldown:18,grantDash:1,tradeoff:'Instantly gain one Pulse Dash, up to 3'},
+  {id:'overclock',name:'Overclock Shard',color:'#ffb15e',duration:5,cooldown:23,fireRateMult:.92,reloadMult:.9,tradeoff:'Fire and reload 8–10% faster'}
  ],
  bosses:[
   {id:'warden',name:'THE WARDEN',title:'Containment Unit',x:1680,y:1680,color:'#42efff',attack:'ring'},
@@ -1070,8 +1083,7 @@ GUNS.push({n:'Pulse Splash',d:0,r:.62,s:490,m:3,rl:0,sp:0,p:1,rg:500,c:'#cb62ff'
 function initPulseBosses(){
  if(!G||G.mode==='box'||!BOSS_CONFIG.enabled)return;
  const bossSpot=cfg=>{for(let n=0;n<90;n++){const a=R()*Math.PI*2,d=150+R()*145,x=cfg.x+Math.cos(a)*d,y=cfg.y+Math.sin(a)*d;if(!hit(x,y,28))return[x,y]}return[cfg.x+300,cfg.y+300]};
- const shardBag=[...SHARD_CONFIG];for(let i=shardBag.length-1;i>0;i--){const j=R()*(i+1)|0;[shardBag[i],shardBag[j]]=[shardBag[j],shardBag[i]]}
- G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>{const pos=bossSpot(cfg),scale=G.P.length>1?Math.min(1.3,BOSS_CONFIG.soloScale+(G.P.length-1)*.018):BOSS_CONFIG.soloScale,hp=BOSS_CONFIG.bossHealth*scale;return({...cfg,n:cfg.name,k:0,x:pos[0],y:pos[1],hp,mh:hp,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,shard:shardBag[i%shardBag.length].id,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0})});
+ G.B=BOSS_CONFIG.bosses.slice(0,BOSS_CONFIG.bossesPerMatch).map((cfg,i)=>{const pos=bossSpot(cfg),scale=G.P.length>1?Math.min(1.3,BOSS_CONFIG.soloScale+(G.P.length-1)*.018):BOSS_CONFIG.soloScale,hp=BOSS_CONFIG.bossHealth*scale;return({...cfg,n:cfg.name,k:0,x:pos[0],y:pos[1],hp,mh:hp,phase:1,attackTimer:2.4+i*.75,telegraph:0,attackAngle:0,alive:true,weaponIndex:BASE_GUN_COUNT+PULSE_WEAPONS.length+i,hitFlash:0})});
  G.eb=[];
 }
 function activateShard(p){
@@ -1080,6 +1092,9 @@ function activateShard(p){
  if((p.shardCooldownUntil||0)>G.T){G.tip='Shard cooling down · '+Math.ceil(p.shardCooldownUntil-G.T)+'s';G.tt=1.2;return}
  p.shardActiveUntil=G.T+cfg.duration;p.shardCooldownUntil=G.T+cfg.cooldown;
  if(cfg.shield)p.sh=Math.min(100,p.sh+cfg.shield);
+ if(cfg.instantHeal)p.hp=Math.min(p.mh,p.hp+cfg.instantHeal);
+ if(cfg.grantDash)p.pulseDashes=Math.min(3,(p.pulseDashes||0)+cfg.grantDash);
+ if(cfg.id==='dashcore'){p.pulseDashes=Math.min(3,Math.max(1,p.pulseDashes||0));p.shardDashChargeAt=G.T+cfg.dashRecharge}
  if(p===G.u){G.tip=cfg.name+' activated · '+cfg.tradeoff;G.tt=2.4}
  for(let j=0;j<18;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*180,vy:(R()-.5)*180,l:.55,c:cfg.color,r:2.5});
  if(p===G.u)snd(740,.16,'triangle',.045);
@@ -1089,7 +1104,8 @@ function bossDamage(b,amount,owner){
  b.hp=Math.max(0,b.hp-amount);b.hitFlash=.12;
  if(b.hp<=0){
   b.alive=false;G.feed.push([b.name+' defeated',G.T]);
-  G.L.push({x:b.x+20,y:b.y,k:'shard',shardType:b.shard,ok:0,dropped:false,createdAt:G.T});
+  const droppedShard=SHARD_CONFIG[(R()*SHARD_CONFIG.length)|0];
+  G.L.push({x:b.x+20,y:b.y,k:'shard',shardType:droppedShard.id,ok:0,dropped:false,createdAt:G.T});
   if(R()<BOSS_CONFIG.weaponDropChance)G.L.push({x:b.x-24,y:b.y+18,k:'g',t:b.weaponIndex,r:3,ok:0,dropped:false,createdAt:G.T,bossDrop:true});
   for(let j=0;j<38;j++)G.fx.push({x:b.x,y:b.y,vx:(R()-.5)*280,vy:(R()-.5)*280,l:.85,c:b.color,r:2+R()*3});
   if(owner===G.u){G.tip=b.name+' defeated! Guaranteed shard dropped.';G.tt=3}
@@ -1271,7 +1287,7 @@ initPulseBosses();
 $('hud').classList.remove('h');$('mb').style.display=MOB?'grid':'none';syncMobileOrientation();gp(1);last=performance.now();requestAnimationFrame(loop)};
 go();window._f=0}
 function menu(){$('en').classList.add('h');$('hud').classList.add('h');$('mn').classList.remove('h');document.documentElement.classList.remove('rotate-required','mobile-portrait');resetTouchPads();ui()}
-function dmg(p,d,o){if(!p.alive||G.over&&p===G.u)return;const d0=d;if(p.shardType==='overdrive'&&p.shardActiveUntil>G.T)d*=1.1;p.fl=.1;p.use=0;if(o&&o!==p){p.lh=G.T;p.la=Math.atan2(o.y-p.y,o.x-p.x)}const s=Math.min(p.sh,d);p.sh-=s;d-=s;p.hp-=d;if(p===G.u)G.hurt=.3;
+function dmg(p,d,o){if(!p.alive||G.over&&p===G.u)return;const d0=d,activeShard=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;if(activeShard&&activeShard.incomingDamageMult)d*=activeShard.incomingDamageMult;p.fl=.1;p.use=0;if(o&&o!==p){p.lh=G.T;p.la=Math.atan2(o.y-p.y,o.x-p.x)}const s=Math.min(p.sh,d);p.sh-=s;d-=s;p.hp-=d;if(p===G.u)G.hurt=.3;
 if((o===G.u||p===G.u)&&G.fx.length<300)G.fx.push({x:p.x+(R()-.5)*14,y:p.y-18,vx:0,vy:-50,l:.7,c:o===G.u?'#ffe28a':'#ff7a6a',t:d0|0});if(p.hp<=0)kill(p,o)}
 const BUILD_TILE=76;
 function cardinal(a){return Math.round(a/(Math.PI/2))*(Math.PI/2)}
@@ -1291,14 +1307,14 @@ for(const g of p.guns)G.L.push({x:p.x+(R()-.5)*90,y:p.y+(R()-.5)*90,k:'g',t:g.t,
 G.alive=G.P.filter(q=>q.alive).length;snd(120,.25,'sawtooth',.06);if(p===G.u)G.dead=G.T,G.place=G.alive+1;if(G.alive<=1&&!G.over){G.fin=G.T}}
 function pulseSplashBurst(x,y,owner,projectile){if(!G||projectile&&projectile.splashed)return;if(projectile)projectile.splashed=true;const radius=96;for(const p of G.P){if(!p.alive||Math.hypot(p.x-x,p.y-y)>radius)continue;const before=p.hp;p.hp=Math.min(p.mh,p.hp+32);p.pulseDashes=3;p.pulseDashCooldown=Math.min(p.pulseDashCooldown||0,G.T);for(let j=0;j<12;j++){const a=R()*Math.PI*2,d=8+R()*84;G.fx.push({x:p.x+Math.cos(a)*d,y:p.y+Math.sin(a)*d,vx:Math.cos(a)*55,vy:Math.sin(a)*55,l:.45,c:j%3?'#c765ff':'#f3d8ff',r:2+R()*2})}G.fx.push({x:p.x,y:p.y-22,vx:0,vy:-30,l:.7,c:'#bd70ff',t:'+'+(p.hp-before|0)+' HP'})}for(let j=0;j<26;j++){const a=R()*Math.PI*2,d=R()*radius;G.fx.push({x:x+Math.cos(a)*d,y:y+Math.sin(a)*d,vx:Math.cos(a)*95,vy:Math.sin(a)*95,l:.6,c:j%2?'#9f52ff':'#df8dff',r:2+R()*3})}if(owner===G.u){G.tip='Pulse Splash · healing wave + 3 Pulse Dashes ('+(MOB?'DASH button':'SHIFT')+')';G.tt=2.3;snd(580,.2,'triangle',.065)}}
 function usePulseDash(p){if(!G||!G.run||G.paused||!p||!p.alive||!(p.pulseDashes>0)||G.T<(p.pulseDashCooldown||0))return false;let dx=0,dy=0;if(p===G.u){dx=(keys.d||0)-(keys.a||0);dy=(keys.s||0)-(keys.w||0)}else if(p.tg){dx=p.tg.x-p.x;dy=p.tg.y-p.y}if(Math.hypot(dx,dy)<.1){dx=Math.cos(p.ang||0);dy=Math.sin(p.ang||0)}const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m;p.pulseDashes=Math.max(0,p.pulseDashes-1);p.pulseDashCooldown=G.T+.55;const ox=p.x,oy=p.y;for(let n=0;n<10;n++)mv(p,dx*13,dy*13);for(let n=0;n<14;n++){const t=n/14;G.fx.push({x:ox+(p.x-ox)*t+(R()-.5)*12,y:oy+(p.y-oy)*t+(R()-.5)*12,vx:-dx*25,vy:-dy*25,l:.32,c:n%3?'#9f52ff':'#f2c7ff',r:2+R()*2})}G.fx.push({x:p.x,y:p.y,vx:0,vy:0,l:.18,c:'#ecbfff',r:18});if(p===G.u){G.tip='PULSE DASH · '+p.pulseDashes+' LEFT';G.tt=.9;snd(820,.09,'triangle',.05)}return true}
-function fire(p,altFire=false){const g=p.guns[p.cur];if(!g||p.cd>0||p.rl>0)return;const base=GUNS[g.t];if(base.pulseSplash){if(g.a<=0){const i=p.cur;p.guns.splice(i,1);p.cur=Math.max(0,Math.min(i,p.guns.length-1));return}g.a--;p.cd=.48;p.use=0;const selfThrow=!!(p.bot&&p.pulseSplashSelfUse),angle=p.ang||0,travel=selfThrow?0:1;G.bl.push({x:p.x+Math.cos(angle)*(selfThrow?0:20),y:p.y+Math.sin(angle)*(selfThrow?0:20),vx:Math.cos(angle)*base.s*travel,vy:Math.sin(angle)*base.s*travel,l:selfThrow?0.06:0.78,d:0,o:p,c:'#bf63ff',knock:0,perk:'',weapon:g.t,pulseSplash:true,hitPlayers:[]});if(p===G.u)snd(460,.11,'triangle',.055);if(g.a<=0){const i=p.cur;p.guns.splice(i,1);p.cur=Math.max(0,Math.min(i,p.guns.length-1));p.rl=0}return}const altFirePulse=g.t===5&&altFire,w=altFirePulse?{...base,d:34,r:.58,s:900,sp:.045,p:1}:base;if(g.a<=0)return rld(p);const tier=TIERS[g.r||0]||TIERS[0];g.a--;p.cd=w.r;p.use=0;if(G.fx.length<300)G.fx.push({x:p.x+Math.cos(p.ang)*28,y:p.y+Math.sin(p.ang)*28,vx:0,vy:0,l:.06,c:'#ffe9a0',r:8});if(w.selfKnock)mv(p,-Math.cos(p.ang)*w.selfKnock,-Math.sin(p.ang)*w.selfKnock);if(w.perk==='overcharge')p.pulseCharge=(p.pulseCharge||0)+1;if(w.perk==='heat')p.pulseHeat=(p.pulseHeat||0)+1;
-const mpShots=[];for(let i=0;i<w.p;i++){const spread=w.perk==='steady'?w.sp*.55:w.sp;const a=p.ang+(R()-.5)*2*(spread+p.err);const shardCfg=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;const shardDamage=shardCfg&&shardCfg.damageMult?shardCfg.damageMult:shardCfg&&shardCfg.id==='phase'?.85:1;const shot={x:p.x+Math.cos(p.ang)*20,y:p.y+Math.sin(p.ang)*20,vx:Math.cos(a)*w.s,vy:Math.sin(a)*w.s,l:w.rg/w.s,d:w.d*tier.mult*p.dm*shardDamage*((w.perk==='ramp'?(1+Math.min(4,p.pulseRamp||0)*.035):1)),o:p,c:w.pulse?(R()<.5?'#42efff':'#ff4bc8'):(p===G.u?tcol(w.c):w.c),knock:w.knock||0,perk:w.perk||'',weapon:g.t,hitPlayers:[]};G.bl.push(shot);mpShots.push({x:shot.x,y:shot.y,vx:shot.vx,vy:shot.vy,l:shot.l,d:shot.d,c:shot.c,knock:shot.knock||0,perk:shot.perk||'',weapon:shot.weapon})}if(p===G.u&&mpOnline)mpSend({type:"shots",shots:mpShots});
+function fire(p,altFire=false){const g=p.guns[p.cur];if(!g||p.cd>0||p.rl>0)return;const base=GUNS[g.t];if(base.pulseSplash){if(g.a<=0){const i=p.cur;p.guns.splice(i,1);p.cur=Math.max(0,Math.min(i,p.guns.length-1));return}g.a--;p.cd=.48;p.use=0;const selfThrow=!!(p.bot&&p.pulseSplashSelfUse),angle=p.ang||0,travel=selfThrow?0:1;G.bl.push({x:p.x+Math.cos(angle)*(selfThrow?0:20),y:p.y+Math.sin(angle)*(selfThrow?0:20),vx:Math.cos(angle)*base.s*travel,vy:Math.sin(angle)*base.s*travel,l:selfThrow?0.06:0.78,d:0,o:p,c:'#bf63ff',knock:0,perk:'',weapon:g.t,pulseSplash:true,hitPlayers:[]});if(p===G.u)snd(460,.11,'triangle',.055);if(g.a<=0){const i=p.cur;p.guns.splice(i,1);p.cur=Math.max(0,Math.min(i,p.guns.length-1));p.rl=0}return}const altFirePulse=g.t===5&&altFire,w=altFirePulse?{...base,d:34,r:.58,s:900,sp:.045,p:1}:base;if(g.a<=0)return rld(p);const tier=TIERS[g.r||0]||TIERS[0];g.a--;const activeFireShard=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;p.cd=w.r*(activeFireShard&&activeFireShard.fireRateMult||1);p.use=0;if(G.fx.length<300)G.fx.push({x:p.x+Math.cos(p.ang)*28,y:p.y+Math.sin(p.ang)*28,vx:0,vy:0,l:.06,c:'#ffe9a0',r:8});if(w.selfKnock)mv(p,-Math.cos(p.ang)*w.selfKnock,-Math.sin(p.ang)*w.selfKnock);if(w.perk==='overcharge')p.pulseCharge=(p.pulseCharge||0)+1;if(w.perk==='heat')p.pulseHeat=(p.pulseHeat||0)+1;
+const mpShots=[];for(let i=0;i<w.p;i++){const spread=w.perk==='steady'?w.sp*.55:w.sp;const shardAccuracy=p.shardType&&p.shardActiveUntil>G.T?((SHARD_CONFIG.find(q=>q.id===p.shardType)||{}).accuracyMult||1):1;const a=p.ang+(R()-.5)*2*(spread+p.err)*shardAccuracy;const shardCfg=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;const shardDamage=shardCfg?(shardCfg.damageMult||1)*(w.pulse?(shardCfg.pulseDamageMult||1):1):1;const shot={x:p.x+Math.cos(p.ang)*20,y:p.y+Math.sin(p.ang)*20,vx:Math.cos(a)*w.s,vy:Math.sin(a)*w.s,l:w.rg/w.s,d:w.d*tier.mult*p.dm*shardDamage*((w.perk==='ramp'?(1+Math.min(4,p.pulseRamp||0)*.035):1)),o:p,c:w.pulse?(R()<.5?'#42efff':'#ff4bc8'):(p===G.u?tcol(w.c):w.c),knock:w.knock||0,perk:w.perk||'',weapon:g.t,hitPlayers:[]};G.bl.push(shot);mpShots.push({x:shot.x,y:shot.y,vx:shot.vx,vy:shot.vy,l:shot.l,d:shot.d,c:shot.c,knock:shot.knock||0,perk:shot.perk||'',weapon:shot.weapon})}if(p===G.u&&mpOnline)mpSend({type:"shots",shots:mpShots});
 if(p===G.u||Math.hypot(p.x-G.u.x,p.y-G.u.y)<500){
 const shotFreq=w.p>1?90:[220,330,90,260,60,420,100,105,300,520,70,370,95,280][g.t]||220;
 const shotWave=['square','sawtooth','sawtooth','square','sawtooth','triangle','sawtooth','sawtooth','square','triangle','sawtooth','triangle','sawtooth','square'][g.t]||'sawtooth';
 snd(shotFreq,g.t===9?.11:.07,shotWave,p===G.u?.05:.02);
 }if(g.a<=0)rld(p)}
-function rld(p){const g=p.guns[p.cur];if(p.rl>0||g.a>=GUNS[g.t].m)return;p.rl=GUNS[g.t].rl}
+function rld(p){const g=p.guns[p.cur];if(p.rl>0||g.a>=GUNS[g.t].m)return;const sc=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;p.rl=GUNS[g.t].rl*(sc&&sc.reloadMult||1)}
 function swap(p,i){if(i<0||i>=p.guns.length||i==p.cur)return;p.cur=i;p.rl=0}
 function want(b,l){
 if(l.k==='shard')return !b.shardType;
@@ -1321,7 +1337,7 @@ function pick(p,manual=false){
  if(l.k==='h')p.med++;
  else if(l.k==='s')p.shd++;
  else if(l.k==='j')p.chug++;
- else if(l.k==='shard'){p.shardType=l.shardType;p.shardActiveUntil=0;p.shardCooldownUntil=0;const sc=SHARD_CONFIG.find(q=>q.id===l.shardType)||SHARD_CONFIG[0];if(p===G.u){G.tip=sc.name+' acquired · press Q to activate';G.tt=3}}
+ else if(l.k==='shard'){p.shardType=l.shardType;p.shardActiveUntil=0;p.shardCooldownUntil=0;p.shardDashChargeAt=G.T+5;if(l.shardType==='dashcore')p.pulseDashes=3;const sc=SHARD_CONFIG.find(q=>q.id===l.shardType)||SHARD_CONFIG[0];if(p===G.u){G.tip=sc.name+' acquired · '+(sc.id==='dashcore'?'Dashes recharge every 5 seconds':sc.duration===0?'press Q to use':'press Q to activate');G.tt=3}}
  else{
   const n={t:l.t,a:GUNS[l.t].m,r:l.r||0};let slot=p.guns.length<3?p.guns.length:-1;
   if(slot<0){let worst=Infinity;for(let j=0;j<p.guns.length;j++){const g=p.guns[j],score=GUNS[g.t].v+(g.r||0)*.12;if(score<worst){worst=score;slot=j}}
@@ -1363,7 +1379,11 @@ if(u.alive&&!G.paused){let ix=(keys.d||0)-(keys.a||0),iy=(keys.s||0)-(keys.w||0)
 for(const t of Object.values(tc)){const dx=t.x-t.ox,dy=t.y-t.oy,d=Math.hypot(dx,dy);if(t.s==='m'){if(d<7){ix=0;iy=0}else{const power=Math.min(1,(d-7)/35),smooth=power*power*(3-2*power);ix=dx/d*smooth;iy=dy/d*smooth}}else if(t.s==='a'&&d>7){u.ang=Math.atan2(dy,dx)}}
 if(!MOB){/* Aim at the mouse in world space so the player rotates through the full 360 degrees around the map. */const aimX=cam.x+ms.x/Z,aimY=cam.y+ms.y/Z;u.ang=Math.atan2(aimY-u.y,aimX-u.x)}
 const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}let shardSpeed=1;if(u.shardType&&u.shardActiveUntil>G.T){const sc=SHARD_CONFIG.find(q=>q.id===u.shardType);if(sc&&sc.speedMult)shardSpeed=sc.speedMult;if(sc&&sc.id==='aegis')shardSpeed=.88}mv(u,ix*u.sp*shardSpeed*dt,iy*u.sp*shardSpeed*dt);autoPickupHealing(u);if(fr){if(G.buildMode)build(u,u.ang);else if(G.T>(G.preventFireUntil||0))fire(u,ms.b===2)}if(G.tt<=0.12){const near=nearestLoot(u,46);if(near&&!['h','s','j'].includes(near.k)){const label=near.k==='g'?GUNS[near.t].n:near.k==='shard'?(SHARD_CONFIG.find(q=>q.id===near.shardType)||SHARD_CONFIG[0]).name:'item';G.tip='Press '+controlKey('pickup','e').toUpperCase()+' to pick up '+label;G.tt=.18}}}
-updatePulseBosses(dt);for(const p of G.P){if(!p.alive)continue;if(p.shardActiveUntil&&G.T>p.shardActiveUntil)p.shardActiveUntil=0;if(p.pulseRampUntil&&G.T>p.pulseRampUntil){p.pulseRamp=0;p.pulseRampUntil=0}p.cd-=dt;p.fl-=dt;p.wc-=dt;if(p.use){p.use.t-=dt;if(p.use.t<=0){const k=p.use.k;if(k==='h'){p.med--;p.hp=Math.min(p.mh,p.hp+60)}else if(k==='s'){p.shd--;p.sh=Math.min(100,p.sh+50)}else if(k==='j'){p.chug--;p.hp=p.mh;p.sh=100}for(let j=0;j<8;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*60,vy:-30-R()*40,l:.7,c:k==='h'?'#5be35b':k==='j'?'#54d6a8':'#4dc9ff',t:'+'});p.use=0;snd(k==='j'?360:520,.15,'triangle')}}if(p.rl>0){p.rl-=dt;if(p.rl<=0)p.guns[p.cur].a=GUNS[p.guns[p.cur].t].m}if(p.bot){ai(p,dt);pick(p)}
+updatePulseBosses(dt);for(const p of G.P){if(!p.alive)continue;if(p.shardActiveUntil&&G.T>p.shardActiveUntil)p.shardActiveUntil=0;
+if(p.shardType==='dashcore'&&(p.pulseDashes||0)<3&&G.T>=(p.shardDashChargeAt||G.T+5)){p.pulseDashes=Math.min(3,(p.pulseDashes||0)+1);p.shardDashChargeAt=G.T+5;if(p===G.u){G.tip='DASH RECHARGED · '+p.pulseDashes+' LEFT';G.tt=.9}}
+const activeShard=p.shardType&&p.shardActiveUntil>G.T?SHARD_CONFIG.find(q=>q.id===p.shardType):null;
+if(activeShard&&activeShard.healPerSec)p.hp=Math.min(p.mh,p.hp+activeShard.healPerSec*dt);
+if(activeShard&&activeShard.shieldPerSec)p.sh=Math.min(100,p.sh+activeShard.shieldPerSec*dt);if(p.pulseRampUntil&&G.T>p.pulseRampUntil){p.pulseRamp=0;p.pulseRampUntil=0}p.cd-=dt;p.fl-=dt;p.wc-=dt;if(p.use){p.use.t-=dt;if(p.use.t<=0){const k=p.use.k;if(k==='h'){p.med--;p.hp=Math.min(p.mh,p.hp+60)}else if(k==='s'){p.shd--;p.sh=Math.min(100,p.sh+50)}else if(k==='j'){p.chug--;p.hp=p.mh;p.sh=100}for(let j=0;j<8;j++)G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*60,vy:-30-R()*40,l:.7,c:k==='h'?'#5be35b':k==='j'?'#54d6a8':'#4dc9ff',t:'+'});p.use=0;snd(k==='j'?360:520,.15,'triangle')}}if(p.rl>0){p.rl-=dt;if(p.rl<=0)p.guns[p.cur].a=GUNS[p.guns[p.cur].t].m}if(p.bot){ai(p,dt);pick(p)}
 if(G.mode!=='box'&&Math.hypot(p.x-z.x,p.y-z.y)>z.r){p.hp-=(1+z.ph*1.5)*dt;if(p.hp<=0)kill(p,0)}}
 if(G.mode!=='box'){if(!z.shr){z.t-=dt;if(z.t<=0){z.shr=1;z.t=z.T=24+z.ph*2;z.sx=z.x;z.sy=z.y;z.sr=z.r;G.tip='The storm is closing!';G.tt=3}}
 else{z.t-=dt;const k=1-z.t/z.T;z.x=z.sx+(z.tx-z.sx)*k;z.y=z.sy+(z.ty-z.sy)*k;z.r=z.sr+(z.tr-z.sr)*k;if(z.t<=0){z.shr=0;z.ph++;z.t=Math.max(10,22-z.ph*3);const nr=[720,500,320,180,80,35][Math.min(z.ph,5)],a=R()*7,d=Math.max(0,z.r-nr)*.6*R();z.tr=z.ph>5?30:nr;z.tx=z.x+Math.cos(a)*d;z.ty=z.y+Math.sin(a)*d}}}
