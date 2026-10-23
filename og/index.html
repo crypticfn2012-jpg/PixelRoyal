@@ -61,7 +61,7 @@ h1{font:900 clamp(34px,9vw,74px)/.92 "Arial Black",Impact,sans-serif;text-align:
 <div id="en" class="s h" style="background:#000c"><h1 id="et"></h1><div class="p" id="ec" style="text-align:center;line-height:1.8"></div>
 <button class="b g" id="x2">WATCH AD: DOUBLE COINS</button><button class="b g" id="lg2" onclick="login()">LOG IN TO SAVE PROGRESS</button><button class="b" onclick="play()">PLAY AGAIN</button><button class="b g" onclick="menu()">MENU</button></div>
 <script>
-const IN_APP=new URLSearchParams(location.search).get('embedded')==='1',SAVE_KEY=IN_APP?'pr-og':'pr';const $=i=>document.getElementById(i),R=Math.random,CG=IN_APP?null:(window.CrazyGames&&window.CrazyGames.SDK);
+const IN_APP=new URLSearchParams(location.search).get('embedded')==='1',SAVE_KEY=IN_APP?'pr-og':'pr';const $=i=>document.getElementById(i),R=Math.random;const SDK=window.CrazyGames&&window.CrazyGames.SDK;const CG=IN_APP||!SDK||SDK.environment==='disabled'?null:SDK;
 let S={coins:0,skin:0,own:[1,0,0,0,0,0],up:[0,0,0],wins:0,games:0,kills:0,best:99,play:0,claimed:0,hat:0,tr:0,wl:0,ow:[1],oh:[1],ot:[1],dd:0,streak:0},user=null,muted=0,sndOn=1;
 const SK=[['Blaze','#ff9f1c',0],['Mint','#2ec4b6',150],['Rose','#ff4d8d',300],['Royal','#8a6cff',500],['Lime','#9be22b',800],['Gold','#ffd447',1200],['Shadow','#3a3f55',1800],['Frost','#9be7ff',2500],['Crimson','#d6342f',350],['Ocean','#2d7bd6',450],['Violet','#b04fe0',700],['Sunset','#ff7a4a',1000],['Mono','#d7dbe6',1500],['Toxic','#7dff3a',2200],['Void','#1a1a2e',3200]],
 HT=[['None','',0],['Cap','',200],['Horns','',400],['Halo','',700],['Crown','',1200],['Wizard','',1800],['Headphones','',300],['Helmet','',500],['Bandana','',350],['Cat Ears','',650],['Pirate','',1000],['Flower Crown','',1400],['Top Hat','',2200]],
@@ -272,11 +272,11 @@ $('mu').onclick=()=>{sndOn=!sndOn;ui()};
 $('pf').onclick=IN_APP?null:login;
 // ---------- BOOT ----------
 (async()=>{const bar=$('pb').firstChild,t0=performance.now();let pr=0;const iv=setInterval(()=>{pr=Math.min(90,pr+3);bar.style.width=pr+'%'},60);
-try{await CG.init()}catch(e){}try{CG.game.loadingStart()}catch(e){}
+if(CG){try{await CG.init()}catch(e){console.warn('CrazyGames SDK init failed; continuing in guest mode.',e)}}if(CG){try{CG.game.loadingStart()}catch(e){}}
 loadS();
-S.own=SK.map((_,i)=>i==0||S.own[i]?1:0);S.oh=HT.map((_,i)=>i==0||S.oh[i]?1:0);S.ot=TR.map((_,i)=>i==0||S.ot[i]?1:0);setInterval(()=>{if(!document.hidden){S.play++;if(S.play%20==0)save();ui()}},1000);try{user=await CG.user.getUser();CG.user.addAuthListener(u=>{user=u;loadS();save();ui()})}catch(e){}
+S.own=SK.map((_,i)=>i==0||S.own[i]?1:0);S.oh=HT.map((_,i)=>i==0||S.oh[i]?1:0);S.ot=TR.map((_,i)=>i==0||S.ot[i]?1:0);setInterval(()=>{if(!document.hidden){S.play++;if(S.play%20==0)save();ui()}},1000);if(CG){try{if(CG.user.isUserAccountAvailable){user=await CG.user.getUser();CG.user.addAuthListener(u=>{user=u;loadS();save();ui()})}}catch(e){console.warn('CrazyGames account unavailable; continuing as guest.',e)}}
 buildMap();while(performance.now()-t0<2400)await new Promise(r=>setTimeout(r,50));clearInterval(iv);bar.style.width='100%';await new Promise(r=>setTimeout(r,250));
-try{CG.game.loadingStop()}catch(e){}$('ld').classList.add('h');$('mn').classList.remove('h');ui();requestAnimationFrame(mloop)})();
+if(CG){try{CG.game.loadingStop()}catch(e){}}$('ld').classList.add('h');$('mn').classList.remove('h');ui();requestAnimationFrame(mloop)})();
 </script>
 <script>
 /* Browsers require a user gesture before fullscreen can be requested. */
