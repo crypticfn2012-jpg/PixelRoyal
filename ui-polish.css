@@ -1,0 +1,183 @@
+/* PixelRoyale UI refresh: drop-in override.
+   Add AFTER pixelpass.css:  <link rel="stylesheet" href="ui-polish.css">
+   Visual only. No markup, IDs or JS are touched; remove the link to revert.
+   Layout and sizing changes are limited to wide desktop (min-width:1051px) so the
+   existing mobile and landscape rules keep working. */
+
+:root{
+  --pr-amber:#ffb74d;--pr-amber-hi:#ffd596;--pr-amber-lo:#f09018;
+  --pr-teal:#4fe3cf;--pr-cyan:#4aeaff;
+  --pr-text:#eef4ff;--pr-dim:#9fb1cb;
+  --pr-line:rgba(140,166,204,.24);
+  --pr-glass:linear-gradient(150deg,rgba(19,31,50,.92),rgba(8,14,25,.94));
+  --pr-ease:cubic-bezier(.2,.8,.2,1);
+}
+::selection{background:rgba(255,183,77,.35)}
+*{scrollbar-width:thin;scrollbar-color:#3a5073 transparent}
+button:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pr-amber-hi);outline-offset:3px}
+
+/* ---------- Buttons ---------- */
+.b{
+  border-radius:12px;border:1px solid rgba(255,226,172,.75);
+  background:linear-gradient(180deg,var(--pr-amber-hi) 0%,var(--pr-amber) 45%,var(--pr-amber-lo) 100%);
+  color:#2a1700;font-weight:900;letter-spacing:.1em;
+  box-shadow:0 3px 0 #94551a,0 10px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .16s var(--pr-ease),filter .16s,box-shadow .16s,border-color .16s;
+}
+.b:active{transform:translateY(2px);box-shadow:0 1px 0 #94551a,inset 0 1px 0 rgba(255,255,255,.4)}
+.b.g{
+  background:linear-gradient(180deg,rgba(44,66,98,.96),rgba(24,39,62,.96));color:var(--pr-text);
+  border-color:var(--pr-line);box-shadow:0 3px 0 rgba(3,7,14,.75),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.b.d{filter:grayscale(.5)}
+@media(hover:hover){
+  .b:hover{filter:brightness(1.07) saturate(1.05);transform:translateY(-2px);box-shadow:0 5px 0 #94551a,0 14px 26px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.5)}
+  .b.g:hover{border-color:rgba(255,190,104,.6);box-shadow:0 5px 0 rgba(3,7,14,.75),0 0 0 1px rgba(255,190,104,.2),inset 0 1px 0 rgba(255,255,255,.1)}
+}
+
+/* ---------- Main menu ---------- */
+#mn #pf{border-radius:16px;background:var(--pr-glass);border-color:var(--pr-line);transition:border-color .18s}
+#mn #pf:hover{border-color:rgba(255,190,104,.55)}
+#mn #av{border-radius:11px;border:2px solid var(--pr-amber);box-shadow:0 0 0 3px rgba(255,183,77,.12)}
+#mn #lvlBadge{color:var(--pr-amber-hi);font-weight:800;letter-spacing:.08em}
+#mn #cn{border-radius:12px;background:var(--pr-glass);border-color:rgba(255,190,104,.4);font-variant-numeric:tabular-nums;letter-spacing:.03em}
+
+/* Nav buttons: quiet glass tiles, amber underline on hover */
+#mn>.row .b.menu-nav{
+  position:relative;border-radius:14px;color:#d6e2f5;border:1px solid var(--pr-line);
+  background:linear-gradient(160deg,rgba(24,38,60,.88),rgba(9,16,28,.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 16px rgba(0,0,0,.2);
+}
+#mn>.row .b.menu-nav::after{
+  content:"";position:absolute;left:24%;right:24%;bottom:3px;height:2px;border-radius:2px;
+  background:var(--pr-amber);opacity:0;transform:scaleX(.3);transition:opacity .18s,transform .18s var(--pr-ease);
+}
+#mn>.row .b.menu-nav:hover,#mn>.row .b.menu-nav:focus-visible{color:#fff;border-color:rgba(255,190,104,.7);background:linear-gradient(160deg,rgba(40,52,70,.96),rgba(14,22,34,.97))}
+#mn>.row .b.menu-nav:hover::after,#mn>.row .b.menu-nav:focus-visible::after{opacity:1;transform:none}
+
+/* Mode card */
+#mn #modeSelect{
+  background:var(--pr-glass);border-color:rgba(160,184,218,.3);
+  box-shadow:0 26px 70px rgba(0,0,0,.45),0 0 0 1px rgba(255,183,77,.06),inset 0 1px 0 rgba(255,255,255,.07);
+}
+#mn #modeSelect::before{content:"";position:absolute;left:24px;right:24px;top:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--pr-amber),transparent)}
+#mn #modeSelect .mode-kicker{color:var(--pr-amber-hi)}
+#mn #selectedModeName{font-weight:900;letter-spacing:.05em}
+#mn #modePicker .mode-option span{padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);letter-spacing:.1em}
+#mn #modePicker .mode-option.active span{color:#1b1100;background:var(--pr-amber);border-color:transparent}
+#mn #modePicker .mode-option:hover img{filter:brightness(1.12) saturate(1.1)}
+
+/* The one signature moment: PLAY button with a slow light sweep */
+#mn #modeSelect .mode-play{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,var(--pr-amber-hi),var(--pr-amber) 55%,var(--pr-amber-lo));
+  box-shadow:0 4px 0 #94551a,0 12px 28px rgba(255,150,30,.22),inset 0 1px 0 rgba(255,255,255,.5);
+}
+#mn #modeSelect .mode-play::after{
+  content:"";position:absolute;top:0;bottom:0;width:38%;left:-60%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-18deg);
+  animation:prShine 4s ease-in-out infinite;
+}
+@keyframes prShine{0%,62%{left:-60%}100%{left:130%}}
+
+/* Private room controls */
+.mp-actions{border-radius:14px}
+.mp-secondary{border-radius:10px;background:linear-gradient(180deg,rgba(40,60,90,.95),rgba(22,36,58,.95))}
+.mp-primary{border-radius:10px}
+#mpRoomCode{border-radius:10px}
+#mpRoomCode:focus{outline:none;border-color:var(--pr-teal);box-shadow:0 0 0 3px rgba(79,227,207,.18)}
+
+/* Season news */
+.pulse-news-toggle{border-radius:12px}
+.pulse-news-dot{animation:prPing 2s ease-out infinite}
+@keyframes prPing{0%{box-shadow:0 0 0 0 rgba(255,78,203,.7)}100%{box-shadow:0 0 0 10px rgba(255,78,203,0)}}
+
+/* Wide desktop only: stage lighting under the fighter, grouped nav dock, larger mode title */
+@media(min-width:1051px){
+  #mn:after{
+    background:
+      radial-gradient(ellipse 230px 62px at 50% calc(50% + 112px),rgba(74,234,255,.22),transparent 72%),
+      radial-gradient(ellipse 330px 330px at 50% 50%,rgba(70,110,190,.2),transparent 70%),
+      linear-gradient(180deg,rgba(4,9,17,.3),transparent 22%,transparent 62%,rgba(4,9,17,.5));
+  }
+  #mn>.row{padding:6px;gap:6px;background:rgba(6,12,22,.55);border:1px solid var(--pr-line);border-radius:20px;backdrop-filter:blur(12px)}
+  #mn #modeSelect{border-radius:22px}
+  #mn #selectedModeName{font-size:19px}
+}
+
+/* ---------- In-game HUD ---------- */
+.chip{border-radius:12px;background:linear-gradient(160deg,rgba(16,26,43,.9),rgba(7,13,23,.9));border:1px solid var(--pr-line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 16px rgba(0,0,0,.25)}
+.chip b{color:#fff;font-variant-numeric:tabular-nums}
+#zt{background:linear-gradient(160deg,rgba(28,17,50,.92),rgba(10,10,26,.92));border-color:rgba(170,120,255,.55);box-shadow:0 0 18px rgba(150,90,255,.2);font-variant-numeric:tabular-nums}
+#feed:empty,#tip:empty{display:none}
+#feed{padding:6px 10px 6px 28px;border-radius:12px;background:linear-gradient(270deg,rgba(6,11,20,.62),transparent);font-weight:800}
+#tip{background:rgba(7,12,21,.74);backdrop-filter:blur(8px);border-color:rgba(255,190,104,.3);color:#fff3dd}
+#mm{border-color:rgba(160,184,218,.55);box-shadow:0 0 0 3px rgba(5,9,16,.8),0 8px 24px rgba(0,0,0,.45),0 0 22px rgba(74,234,255,.15)}
+#pa{background:rgba(9,16,28,.82);color:#eaf2ff;border-color:var(--pr-line);box-shadow:none}
+
+/* Health and shield: glossy fill with 10% tick marks */
+.bar{height:20px;border-radius:8px;background:rgba(5,9,16,.82);border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.bar i{border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.bar::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.28) calc(10% - 1px) 10%)}
+.bar b{z-index:2;font-weight:900;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.hp i{background:linear-gradient(180deg,#9bf79b,#2db52d)}
+.sh i{background:linear-gradient(180deg,#9be4ff,#2a8fd4)}
+
+/* Hotbar: the active slot is now unmistakable even with a rarity border colour */
+#wp .sl{
+  border-radius:11px;background:linear-gradient(160deg,rgba(18,29,47,.92),rgba(7,13,23,.94));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px rgba(0,0,0,.28);
+  transition:transform .16s var(--pr-ease),background .16s,box-shadow .16s;
+}
+#wp .sl small{background:rgba(255,255,255,.1);border-radius:5px;padding:1px 5px;color:#dbe6f8;font-weight:900}
+#wp .sl.on{background:linear-gradient(160deg,rgba(120,78,28,.55),rgba(26,34,50,.95));box-shadow:0 0 0 1px rgba(255,190,104,.6),0 0 18px rgba(255,183,77,.28),0 8px 18px rgba(0,0,0,.3)}
+#wp .sl.on small{background:var(--pr-amber);color:#1b1100}
+#wp .sl.z{filter:grayscale(.6)}
+@media(min-width:701px){#wp .sl.on{transform:translateY(-4px)}}
+
+/* Touch controls */
+.pad-ring{box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 6px 20px rgba(0,0,0,.3)}
+.pad-knob{background:radial-gradient(circle at 35% 30%,rgba(220,238,255,.9),rgba(88,122,166,.7))}
+#mb #bf{box-shadow:0 3px 0 #7f1f25,0 0 22px rgba(255,90,90,.35)}
+
+/* ---------- Panels: shop, locker, upgrades, settings, stats ---------- */
+.p{background:var(--pr-glass);border-color:rgba(160,184,218,.3);box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06)}
+#pc:not(.pixelpass-panel) h2{padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--pr-line)}
+.it{border-radius:12px;border-left-color:var(--pr-amber)}
+.pv{background:radial-gradient(circle at 50% 35%,#2a4170,#14213a);border-radius:12px;border-color:var(--pr-line)}
+
+/* Category tabs become a segmented control */
+#pc:not(.pixelpass-panel)>.row,.locker-tabs{padding:5px;background:rgba(4,8,15,.55);border:1px solid var(--pr-line);border-radius:14px}
+#pc:not(.pixelpass-panel)>.row .b,.locker-tabs .b{border-radius:10px;box-shadow:none;transform:none}
+#pc:not(.pixelpass-panel)>.row .b.g,.locker-tabs .b.g{background:transparent;border-color:transparent;color:var(--pr-dim)}
+#pc:not(.pixelpass-panel)>.row .b.g:hover,.locker-tabs .b.g:hover{color:#fff;background:rgba(255,255,255,.06);box-shadow:none}
+.locker-card{border-radius:12px;background:linear-gradient(160deg,rgba(20,32,52,.9),rgba(10,18,31,.9))}
+
+/* Settings: real toggle switches */
+.settings-section{border-radius:14px;background:linear-gradient(160deg,rgba(14,24,40,.7),rgba(7,13,23,.6))}
+.bind-row{border-radius:10px}
+.setting-line input[type=checkbox]{
+  -webkit-appearance:none;appearance:none;position:relative;width:44px;height:25px;border-radius:999px;
+  background:#0a1422;border:1px solid #405773;cursor:pointer;transition:background .2s,border-color .2s;
+}
+.setting-line input[type=checkbox]::before{
+  content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
+  background:#8da2c2;transition:transform .2s var(--pr-ease),background .2s;
+}
+.setting-line input[type=checkbox]:checked{background:linear-gradient(180deg,#ffcb7a,#f2931f);border-color:#ffd9a0}
+.setting-line input[type=checkbox]:checked::before{transform:translateX(19px);background:#fff}
+
+/* ---------- Pause, end screen, lobby, boot ---------- */
+#en,#pz{background:radial-gradient(ellipse at 50% 35%,rgba(26,40,70,.78),rgba(3,6,12,.93) 75%)!important;backdrop-filter:blur(10px)}
+#pz h1,#en h1{letter-spacing:.14em;text-shadow:0 0 30px currentColor}
+#en #ec{min-width:min(340px,88vw)}
+.mp-lobby-card{position:relative;border-radius:22px;background:var(--pr-glass);box-shadow:0 30px 90px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.mp-lobby-card::before{content:"";position:absolute;left:28px;right:28px;top:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--pr-cyan),transparent)}
+.mp-lobby-code strong{color:var(--pr-amber-hi);text-shadow:0 0 18px rgba(255,183,77,.35)}
+.boot-track{height:6px}
+#bootBar{box-shadow:0 0 14px rgba(22,183,255,.7)}
+
+@media(prefers-reduced-motion:reduce){
+  #mn #modeSelect .mode-play::after,.pulse-news-dot{animation:none}
+  .b,#wp .sl,#mn>.row .b.menu-nav::after{transition:none}
+}
