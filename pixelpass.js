@@ -1,8 +1,8 @@
-/* PixelRoyal account progression, rotating challenges and 50-tier PixelPass. */
+/* PixelRoyale account progression, rotating challenges and 50-tier PixelPass. */
 (function () {
 "use strict";
 const LEVELS=50,PREMIUM_PRICE=8000,tierXP=n=>250+(n-1)*18;
-const TITLES=["Storm Scout","Drop Specialist","Neon Outlaw","Royal Ace","Pixel Vanguard","Island Phantom","Last One Standing","Crown Collector","Clutch Machine","Storm Breaker","PixelRoyal Legend","The Royal One"];
+const TITLES=["Storm Scout","Drop Specialist","Neon Outlaw","Royal Ace","Pixel Vanguard","Island Phantom","Last One Standing","Crown Collector","Clutch Machine","Storm Breaker","PixelRoyale Legend","The Royal One"];
 const BANNERS=[
 {id:"default",name:"Royal Gold",color:"#ffb43a"},{id:"ember",name:"Ember",color:"#ff5d51"},{id:"mint",name:"Mint",color:"#2ec4b6"},{id:"royal",name:"Royal Purple",color:"#9b7bff"},{id:"frost",name:"Frost",color:"#8be6ff"},{id:"toxic",name:"Toxic",color:"#a8e64b"},{id:"rose",name:"Rose",color:"#ff73ad"},{id:"ocean",name:"Deep Ocean",color:"#4388ff"},{id:"sunset",name:"Sunset",color:"#ff9b58"},{id:"void",name:"Void",color:"#b6a0ff"},{id:"cyber",name:"Cyber",color:"#55f5e4"},{id:"gold",name:"Champion Gold",color:"#ffd447"},{id:"aurora",name:"Aurora",color:"#83ffad"}];
 const EMOTES=[
