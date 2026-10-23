@@ -247,7 +247,7 @@ function qt(){G.run=0;G.over=1;G.paused=0;$('pz').classList.add('h');gp(0);menu(
 // ---------- MENUS ----------
 const cl=()=>$('pl').classList.add('h');
 function ui(){$('brw').textContent='REWARDS'+((S.claimed<RW.length&&S.play>=RW[S.claimed][0]*60)||S.dd!=(Date.now()/864e5|0)?' •':'');$('cn').innerHTML='<i class="co"></i>'+S.coins;$('mu').textContent=sndOn?'SOUND ON':'SOUND OFF';
-const can=CG&&CG.user&&CG.user.isUserAccountAvailable;$('un').textContent=user?user.username:'GUEST';$('us').textContent=user?'Progress saved to your account':can?'Click to log in and save progress':'Saved on this device';$('pf').style.cursor=user||!can?'default':'pointer';
+const can=CG&&CG.user&&CG.user.isUserAccountAvailable;$('un').textContent=user?user.username:'GUEST';$('us').textContent=user?'Progress saved to your account':can?'Click to log in and save progress':IN_APP?'OG progress saved separately on this device':'Saved on this device';$('pf').style.cursor=user||!can?'default':'pointer';
 const a=$('av'),u=user&&user.profilePictureUrl||'';if(a.dataset.s!==u){a.dataset.s=u;if(u)a.src=u}a.style.display=u?'block':'none'}
 const login=async()=>{try{if(!user){user=await CG.user.showAuthPrompt();loadS();save()}ui()}catch(e){}};
 function loadS(){try{const c=(!IN_APP&&CG&&CG.data&&CG.data.getItem('pr'))||localStorage.getItem(SAVE_KEY);if(c)Object.assign(S,JSON.parse(c))}catch(e){}S.own=SK.map((_,i)=>i==0||S.own&&S.own[i]?1:0);S.oh=HT.map((_,i)=>i==0||S.oh&&S.oh[i]?1:0);S.ot=TR.map((_,i)=>i==0||S.ot&&S.ot[i]?1:0);S.ow=WL.map((_,i)=>i==0||S.ow&&S.ow[i]?1:0)}
@@ -263,7 +263,7 @@ const eq=i=>{S[CO[cs][3]]=i;save();pn('shop')},by=i=>{const c=CO[cs],p=c[1][i][2
 dl=()=>{const td=Date.now()/864e5|0;if(S.dd==td)return;S.streak=S.dd==td-1?S.streak+1:1;S.dd=td;S.coins+=100+50*Math.min(S.streak-1,6);save();ui();pn('rw');snd(880,.2,'triangle')},
 cr=i=>{const r=RW[i];if(S.play>=r[0]*60&&i==S.claimed){S.coins+=r[1];if(r[2])S[CO[r[2]][2]][r[3]]=1;S.claimed++;save();ui();pn('rw');snd(880,.2,'triangle')}},ra=()=>ad('rewarded').then(ok=>{if(ok){S.coins+=100;save();ui();pn('shop')}});
 $('mu').onclick=()=>{sndOn=!sndOn;ui()};
-$('pf').onclick=login;
+$('pf').onclick=IN_APP?null:login;
 // ---------- BOOT ----------
 (async()=>{const bar=$('pb').firstChild,t0=performance.now();let pr=0;const iv=setInterval(()=>{pr=Math.min(90,pr+3);bar.style.width=pr+'%'},60);
 try{await CG.init()}catch(e){}try{CG.game.loadingStart()}catch(e){}
