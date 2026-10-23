@@ -772,6 +772,11 @@ h1 span{color:#edf3fc;text-shadow:none;letter-spacing:.13em;font-size:.72em;marg
   #wp{max-width:calc(100vw - 145px)}
   #wp .sl{flex-basis:70px;min-width:70px;max-width:70px}
 }
+
+/* Keep shop category tabs on one row at every viewport size. */
+#pc > .row{display:flex;flex-wrap:nowrap;gap:6px;width:100%;max-width:100%;}
+#pc > .row .b{flex:1 1 0;min-width:0;padding:9px 5px;font-size:clamp(9px,1.6vw,12px);letter-spacing:.02em;white-space:nowrap;}
+@media(max-width:380px){#pc > .row{gap:4px}#pc > .row .b{padding:8px 2px;font-size:9px;letter-spacing:0}}
 </style><style>
 .mp-actions{width:min(360px,88vw);display:flex;flex-direction:column;gap:7px;margin-top:2px}
 .mp-primary,.mp-secondary{border:1px solid #45617e;border-radius:9px;font:900 11px Inter,"Segoe UI",Arial,sans-serif;letter-spacing:.08em;padding:10px 11px;cursor:pointer}
@@ -1952,4 +1957,9 @@ setInterval(mpSendState, 125);
   <button type="button" id="ogReturnButton" onclick="exitOGMode()" aria-label="Return to the main PixelRoyale menu"><span aria-hidden="true">←</span> MAIN GAME</button>
 </div>
 <div id="pulseTrailer" aria-hidden="true" role="dialog" aria-label="PixelRoyale Season 1 Pulse cinematic trailer"><canvas id="pulseTrailerCanvas" aria-label="Animated PixelRoyale Season 1 trailer"></canvas><div id="pulseTrailerMeta">PIXELFORGE STUDIOS PRESENTS&nbsp; / &nbsp;SEASON 01</div><button id="pulseTrailerExit" type="button" onclick="closePulseTrailer()" aria-label="Exit trailer"><span>×</span><b>EXIT TRAILER</b></button><div id="pulseTrailerProgress" aria-hidden="true"><i></i></div></div>
-<script src="pulse-trailer.js"></script></body></html>
+<script src="pulse-trailer.js"></script>
+<script>
+/* Browsers require a user gesture before fullscreen can be requested. */
+(function(){let requested=false;function requestGameFullscreen(){if(requested||document.fullscreenElement)return;requested=true;const root=document.documentElement;const request=root.requestFullscreen||root.webkitRequestFullscreen;if(request){try{const result=request.call(root);if(result&&result.catch)result.catch(function(){requested=false;});}catch(_){requested=false;}}}window.addEventListener('pointerdown',requestGameFullscreen,{once:true,capture:true});window.addEventListener('keydown',requestGameFullscreen,{once:true,capture:true});document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement)requested=false;});document.addEventListener('webkitfullscreenchange',function(){if(!document.webkitFullscreenElement)requested=false;});})();
+</script>
+</body></html>
