@@ -330,5 +330,134 @@
 
   /* ---------- Menu polish: controls hint + one-click PLAY ---------- */
   if (!$('menuHint')) { const d = document.createElement('div'); d.id = 'menuHint'; $('mn').appendChild(d); }
+
+  /* ---------- Weapon Roulette: pure gun progression, respawns, first-to-finish ---------- */
+  const ROULETTE_GUN_ORDER = [9,4,10,6,7,8,13,5,3,12,2,11,1,0];
+  let rouletteActive = false;
+  const rouletteWeaponName = stage => GUNS[ROULETTE_GUN_ORDER[Math.min(stage, ROULETTE_GUN_ORDER.length - 1)]].n;
+  function rouletteEquip(p, stage) {
+    if (!p) return;
+    p.rouletteStage = Math.max(0, Math.min(stage, ROULETTE_GUN_ORDER.length - 1));
+    const t = ROULETTE_GUN_ORDER[p.rouletteStage], base = GUNS[t];
+    p.guns = [{ t, a: base.m, r: 2 }];
+    p.cur = 0; p.rl = 0; p.use = 0; p.cd = 0;
+  }
+  function rouletteHud() {
+    if (!rouletteActive || !G || !G.u || G.mode !== 'roulette') return;
+    const w = Math.max(1, Math.min(innerWidth, 420)), x = innerWidth / 2, y = 18;
+    cx.save(); cx.setTransform(1,0,0,1,0,0);
+    cx.fillStyle = 'rgba(7,15,30,.88)'; cx.strokeStyle = '#53e7e7'; cx.lineWidth = 2;
+    cx.beginPath(); cx.roundRect(x-w/2,y,w,70,12); cx.fill(); cx.stroke();
+    cx.textAlign='center'; cx.textBaseline='middle'; cx.fillStyle='#66f4f0'; cx.font='900 11px Segoe UI,Arial'; cx.fillText('WEAPON ROULETTE',x,y+14);
+    cx.fillStyle='#fff'; cx.font='900 17px Segoe UI,Arial';
+    cx.fillText('WEAPON '+(G.u.rouletteStage+1)+' / '+ROULETTE_GUN_ORDER.length,x,y+36);
+    cx.fillStyle='#c7d7e8'; cx.font='700 11px Segoe UI,Arial';
+    cx.fillText(rouletteWeaponName(G.u.rouletteStage),x,y+55);
+    cx.restore();
+  }
+  function addRouletteMenuOption() {
+    const picker = $('modePicker');
+    if (!picker || $('optionRoulette')) return;
+    const b = document.createElement('button');
+    b.className='mode-option'; b.id='optionRoulette';
+    b.innerHTML='<img src="PulseSplash.png" alt=""><b>WEAPON ROULETTE</b><small>Strongest to weakest · First to finish wins</small><span>SELECT</span>';
+    b.addEventListener('click',()=>selectMode('roulette'));
+    picker.appendChild(b);
+    picker.style.gridTemplateColumns='repeat(2,minmax(0,1fr))';
+  }
+  const _selectModeRoulette = selectMode;
+  selectMode = function(mode) {
+    if (mode !== 'roulette') return _selectModeRoulette(mode);
+    selectedMode='roulette';
+    $('selectedModeName').textContent='WEAPON ROULETTE';
+    $('selectedModeDesc').textContent='Start with powerful guns. Every elimination moves you to a weaker weapon.';
+    $('playModeName').textContent='WEAPON ROULETTE';
+    $('mpStatus').textContent='Solo matchmaking with bots · Respawns · No building or abilities.';
+    [['optionBr','br'],['optionBox','box'],['optionOg','og'],['optionRoulette','roulette']].forEach(([id,value])=>{
+      const el=$(id); if(!el)return;
+      const active=value===mode;el.classList.toggle('active',active);
+      const span=el.querySelector('span');if(span)span.textContent=active?'SELECTED':'SELECT';
+    });
+    $('modePicker').classList.add('h');
+  };
+  addRouletteMenuOption();
+  const _launchSelectedModeRoulette = launchSelectedMode;
+  launchSelectedMode = function() {
+    if (selectedMode !== 'roulette') return _launchSelectedModeRoulette();
+    if (typeof mpDisconnect==='function') mpDisconnect();
+    rouletteActive=true;
+    _playRoulette('br');
+  };
+  const _playRoulette = play;
+  play = function(mode='br') {
+    if (mode !== 'roulette') { rouletteActive=false; return _playRoulette(mode); }
+    rouletteActive=true;
+    _playRoulette('br');
+    if (!G || !G.P || !G.u) { rouletteActive=false; return; }
+    G.mode='roulette'; G.box=null; G.B=[]; G.W=[]; G.bl=[]; G.L=[]; G.buildMode=false; G.edit=null;
+    G.fin=0; G.dead=0; G.over=0; G.rouletteWinner=null; G.rouletteStartedAt=G.T;
+    for (const p of G.P) {
+      p.k=0; p.alive=1; p.hp=p.mh=100; p.sh=0; p.med=0; p.shd=0; p.chug=0;
+      p.shardType=null; p.shardActiveUntil=0; p.pulseDashes=0; p.buildMode=false;
+      p.x=C+(R()-.5)*500; p.y=C+(R()-.5)*500; p.lx=p.x; p.ly=p.y;
+      p.rouletteRespawnAt=0; rouletteEquip(p,0);
+    }
+    G.alive=G.P.length;
+    G.tip='Get eliminations to advance through weaker weapons. First to finish wins!';
+    G.tt=4;
+    $('hud').classList.remove('h'); $('en').classList.add('h');
+  };
+  const _killRoulette = kill;
+  kill = function(p,o) {
+    if (!rouletteActive || !G || G.mode!=='roulette') return _killRoulette(p,o);
+    if (!p || !p.alive) return;
+    p.alive=0; p.use=0; p.rl=0; p.rouletteRespawnAt=G.T+0.85;
+    if (o && o!==p) {
+      o.k=(o.k||0)+1;
+      o.rouletteStage=(o.rouletteStage||0)+1;
+      G.feed.push([o.n+' eliminated '+p.n,G.T]);
+      if (o===G.u && window.PixelProgress) window.PixelProgress.onEvent('elims',1);
+      if (o.rouletteStage>=ROULETTE_GUN_ORDER.length) {
+        G.rouletteWinner=o; G.fin=G.T; G.rouletteWon=o===G.u;
+      } else rouletteEquip(o,o.rouletteStage);
+    } else G.feed.push([p.n+' was eliminated',G.T]);
+    G.alive=G.P.filter(q=>q.alive).length;
+    snd(120,.18,'sawtooth',.05);
+  };
+  const _wantRoulette = want;
+  want = function(b,l) {
+    if (rouletteActive && G && G.mode==='roulette') return false;
+    return _wantRoulette(b,l);
+  };
+  const _drawRoulette = draw;
+  draw = function() {
+    if (rouletteActive && G && G.mode==='roulette' && G.run) {
+      for (const p of G.P) if (!p.alive && p.rouletteRespawnAt && G.T>=p.rouletteRespawnAt && !G.rouletteWinner) {
+        const a=R()*Math.PI*2, r=220+R()*180;
+        p.x=C+Math.cos(a)*r; p.y=C+Math.sin(a)*r; p.lx=p.x; p.ly=p.y;
+        p.hp=100; p.sh=0; p.alive=1; p.rouletteRespawnAt=0; p.fl=0; p.use=0;
+      }
+      G.alive=G.P.filter(p=>p.alive).length;
+    }
+    _drawRoulette();
+    rouletteHud();
+  };
+  const _finishRoulette = finish;
+  finish = function() {
+    if (!rouletteActive || !G || G.mode!=='roulette') return _finishRoulette();
+    if (G.over) return;
+    const u=G.u, won=G.rouletteWinner===u;
+    G.over=1; G.run=0; G.paused=0; gp(0);
+    const coins=Math.max(20,(u.k||0)*12+(won?100:0));
+    S.games++; S.kills+=(u.k||0); if(won)S.wins++; S.coins+=coins; G.c=coins;
+    recordMatchResult(won);
+    if(window.PixelProgress)window.PixelProgress.finishMatch({mode:'roulette',win:won,kills:u.k||0,duration:G.T});
+    $('et').textContent=won?'ROULETTE WON!':'MATCH OVER';
+    $('et').style.color=won?'#65f3e7':'#ff8aa9';
+    $('ec').innerHTML='<div style="font-size:26px;color:#65f3e7">'+(won?'ALL WEAPONS MASTERED':'WEAPON '+Math.min(ROULETTE_GUN_ORDER.length,u.rouletteStage+1)+' / '+ROULETTE_GUN_ORDER.length)+'</div>Eliminations: '+(u.k||0)+'<br>Time: '+(G.T|0)+'s<br><span style="color:#ffd447">+'+coins+' coins</span>';
+    $('x2').classList.add('h'); $('lg2').style.display='none'; $('en').classList.remove('h');
+    $('hud').classList.add('h');
+  };
+
   selectMode('br');
 })();
