@@ -24,7 +24,7 @@
     {name:'Pulse',min:1400,color:'#d58aff',icon:'VII'},
     {name:'Royal',min:1850,color:'#ffcf70',icon:'VIII'}
   ];
-  const rp = () => Math.max(0, Number(S.rankPoints ?? (Number(S.mmr || 1000) - 400)) || 0);
+  const rp = () => Math.max(0, Number(S.rankPoints ?? (Number.isFinite(S.mmr) ? S.mmr - 400 : 0)) || 0);
   const rankInfo = points => { let r=RANKS[0]; for(const x of RANKS) if(points>=x.min) r=x; return r; };
   const tier = m => rankInfo(Math.max(0,m-400)).name.toUpperCase();
   const nextRank = points => RANKS.find(r=>r.min>points)||null;
