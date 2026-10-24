@@ -1983,4 +1983,5 @@ setInterval(mpSendState, 125);
 /* Browsers require a user gesture before fullscreen can be requested. */
 (function(){let requested=false;function requestGameFullscreen(){if(requested||document.fullscreenElement)return;requested=true;const root=document.documentElement;const request=root.requestFullscreen||root.webkitRequestFullscreen;if(request){try{const result=request.call(root);if(result&&result.catch)result.catch(function(){requested=false;});}catch(_){requested=false;}}}window.addEventListener('pointerdown',requestGameFullscreen,{once:true,capture:true});window.addEventListener('keydown',requestGameFullscreen,{once:true,capture:true});document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement)requested=false;});document.addEventListener('webkitfullscreenchange',function(){if(!document.webkitFullscreenElement)requested=false;});})();
 </script>
+<script src="game-upgrade.js"></script>
 </body></html>
