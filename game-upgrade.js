@@ -181,7 +181,6 @@
       cx.strokeStyle = 'rgba(255,255,255,.9)'; cx.lineWidth = 2; cx.beginPath();
       for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { cx.moveTo(x + a * gap, y + b * gap); cx.lineTo(x + a * (gap + 7), y + b * (gap + 7)); }
       cx.stroke(); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(x, y, 1.5, 0, 7); cx.fill();
-      if (u.rl > 0 && w && w.rl) { cx.strokeStyle = '#ffd447'; cx.lineWidth = 3; cx.beginPath(); cx.arc(x, y, gap + 16, -1.57, -1.57 + 6.283 * (1 - u.rl / w.rl)); cx.stroke(); }
       if (G.hm && T - G.hm.t < .18) {
         const k = G.hm.k, r = k ? 14 : 10; cx.strokeStyle = k ? '#ff4d4d' : '#fff'; cx.lineWidth = k ? 3 : 2; cx.beginPath();
         for (const [a, b] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { cx.moveTo(x + a * 5, y + b * 5); cx.lineTo(x + a * r, y + b * r); }
@@ -195,9 +194,15 @@
       cx.globalAlpha = 1;
     }
     if (!S.tutDone) {
-      if (T < 18) {
-        const L = MOB ? ['Left stick MOVE · right stick AIM · hold FIRE', 'BUILD, EDIT and items are on the right'] : ['WASD move · click shoot · R reload', controlKey('pickup', 'e').toUpperCase() + ' pick up · ' + controlKey('build', 'f').toUpperCase() + ' build · ' + controlKey('edit', 'v').toUpperCase() + ' edit (again on an edit resets it)', 'H medkit · J shield · K chug · Q shard · Shift dash'];
-        cx.globalAlpha = Math.min(1, (18 - T) / 2, T * 2); cx.shadowBlur = 0; cx.fillStyle = 'rgba(7,12,22,.78)';
+      if (T < 3) {
+        const key = name => controlKey(name, ({build:'f',edit:'v',pickup:'e',reload:'r',med:'h',shield:'j',chug:'k',pause:'escape'})[name] || name).toUpperCase();
+        const L = MOB
+          ? ['Left stick MOVE · right stick AIM · hold FIRE', 'Build, edit, reload and items use the touch buttons']
+          : ['WASD MOVE · MOUSE AIM & SHOOT · ' + key('reload') + ' RELOAD',
+             key('pickup') + ' PICK UP · ' + key('build') + ' BUILD · ' + key('edit') + ' EDIT',
+             key('med') + ' MEDKIT · ' + key('shield') + ' SHIELD · ' + key('chug') + ' CHUG · Q SHARD · SHIFT DASH'];
+        const fade = T > 2.35 ? Math.max(0, (3 - T) / .65) : 1;
+        cx.globalAlpha = fade; cx.shadowBlur = 0; cx.fillStyle = 'rgba(7,12,22,.78)';
         cx.fillRect(W2 / 2 - 230, H2 * .6, 460, 18 + L.length * 22); cx.fillStyle = '#eaf2ff'; cx.textAlign = 'center'; cx.font = '800 13px Segoe UI,Arial';
         L.forEach((s, i) => cx.fillText(s, W2 / 2, H2 * .6 + 26 + i * 22));
       } else { S.tutDone = 1; save(); }
