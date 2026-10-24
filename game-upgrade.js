@@ -386,7 +386,7 @@
     if (selectedMode !== 'roulette') return _launchSelectedModeRoulette();
     if (typeof mpDisconnect==='function') mpDisconnect();
     rouletteActive=true;
-    _playRoulette('br');
+    play('roulette');
   };
   const _playRoulette = play;
   play = function(mode='br') {
@@ -395,7 +395,7 @@
     _playRoulette('br');
     if (!G || !G.P || !G.u) { rouletteActive=false; return; }
     G.mode='roulette'; G.box=null; G.B=[]; G.W=[]; G.bl=[]; G.L=[]; G.buildMode=false; G.edit=null;
-    G.fin=0; G.dead=0; G.over=0; G.rouletteWinner=null; G.rouletteStartedAt=G.T;
+    G.fin=0; G.dead=0; G.over=0; G.rouletteWinner=null; G.rouletteStartedAt=G.T; if(G.z){G.z.r=10000;G.z.sr=10000;G.z.tr=10000;G.z.ph=0;G.z.shr=0;G.z.t=99999;}
     for (const p of G.P) {
       p.k=0; p.alive=1; p.hp=p.mh=100; p.sh=0; p.med=0; p.shd=0; p.chug=0;
       p.shardType=null; p.shardActiveUntil=0; p.pulseDashes=0; p.buildMode=false;
