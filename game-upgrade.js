@@ -12,9 +12,22 @@
     location.href = './og/index.html';
   };
 
-  /* ---------- Skill rating (SR) + matchmaking ---------- */
+  /* ---------- Ranked ladder: persistent RP, divisions, streaks and seasonal-ready stats ---------- */
   const mmr = () => Number.isFinite(S.mmr) ? S.mmr : 1000;
-  const tier = m => m < 900 ? 'BRONZE' : m < 1100 ? 'SILVER' : m < 1300 ? 'GOLD' : m < 1500 ? 'PLATINUM' : 'DIAMOND';
+  const RANKS = [
+    {name:'Rookie',min:0,color:'#a9b3c2',icon:'I'},
+    {name:'Bronze',min:100,color:'#cd8b55',icon:'II'},
+    {name:'Silver',min:250,color:'#c7d3e3',icon:'III'},
+    {name:'Gold',min:450,color:'#ffd166',icon:'IV'},
+    {name:'Platinum',min:700,color:'#57e4d4',icon:'V'},
+    {name:'Diamond',min:1000,color:'#67a9ff',icon:'VI'},
+    {name:'Pulse',min:1400,color:'#d58aff',icon:'VII'},
+    {name:'Royal',min:1850,color:'#ffcf70',icon:'VIII'}
+  ];
+  const rp = () => Math.max(0, Number(S.rankPoints ?? (Number(S.mmr || 1000) - 400)) || 0);
+  const rankInfo = points => { let r=RANKS[0]; for(const x of RANKS) if(points>=x.min) r=x; return r; };
+  const tier = m => rankInfo(Math.max(0,m-400)).name.toUpperCase();
+  const nextRank = points => RANKS.find(r=>r.min>points)||null;
   let adMatches = 0, adLast = 0;
   const _ms = matchSkill;
   matchSkill = function () { return clamp(.7 * (mmr() - 1000) / 160 + .3 * _ms(), -3, 3); }; // bot difficulty follows SR
@@ -22,14 +35,27 @@
   recordMatchResult = function (win) {
     const box = G && G.mode === 'box', u = G && G.u, place = win ? 1 : (G && G.place) || 24;
     const score = box ? (win ? 1 : 0) : (24 - place) / 23 * .8 + Math.min(.2, ((u && u.k) || 0) * .04);
-    S.lastDelta = Math.round(28 * (score - .45) * 2);
-    S.mmr = clamp(mmr() + S.lastDelta, 400, 2000);
+    const delta = Math.round(34 * (score - .43) * 2);
+    S.lastDelta = delta;
+    S.rankDelta = delta;
+    S.rankPoints = clamp(rp() + delta, 0, 2400);
+    S.mmr = clamp(400 + S.rankPoints, 400, 2800);
+    S.rankMatches = (Number(S.rankMatches)||0) + 1;
+    S.rankWins = (Number(S.rankWins)||0) + (win ? 1 : 0);
+    S.rankBest = Math.max(Number(S.rankBest)||0, S.rankPoints);
+    S.rankStreak = delta >= 0 ? Math.max(0,Number(S.rankStreak)||0)+1 : Math.min(0,Number(S.rankStreak)||0)-1;
+    save();
     adMatches++;
     _rec(win);
   };
   const note = () => {
     const e = $('ec');
-    if (e && S.lastDelta != null) e.innerHTML += '<br><span style="color:#9fd3ff">' + tier(mmr()) + ' · ' + mmr() + ' SR (' + (S.lastDelta >= 0 ? '+' : '') + S.lastDelta + ')</span>';
+    if (e && S.lastDelta != null) {
+      const points=rp(), rank=rankInfo(points), next=nextRank(points), progress=next?Math.round((points-rank.min)/(next.min-rank.min)*100):100;
+      e.innerHTML += '<br><span style="color:'+rank.color+';font-weight:900">RANKED · '+rank.name.toUpperCase()+' '+rank.icon+' · '+points+' RP ('+(S.lastDelta>=0?'+':'')+S.lastDelta+')</span>'
+        + (next ? '<br><small style="color:#aebbd0">'+progress+'% to '+next.name+'</small>' : '<br><small style="color:#ffcf70">TOP RANK REACHED</small>');
+      save();
+    }
   };
   const _fin = finish;
   finish = function () { _fin(); if (G && G.mode !== 'box') note(); };
@@ -41,7 +67,53 @@
   const lb = $('lvlBadge');
   if (lb && lb.parentNode) { const s = document.createElement('small'); s.id = 'srBadge'; lb.parentNode.appendChild(s); }
   const _ui = ui;
-  ui = function () { _ui(); const s = $('srBadge'); if (s) s.textContent = tier(mmr()) + ' · ' + mmr() + ' SR'; };
+  ui = function () {
+    _ui();
+    const points=rp(), rank=rankInfo(points), next=nextRank(points), s=$('srBadge');
+    if (s) {
+      s.textContent = rank.name.toUpperCase()+' '+rank.icon+' · '+points+' RP';
+      s.style.color=rank.color;
+      s.title=next ? Math.max(0,next.min-points)+' RP to '+next.name : 'Top rank reached';
+    }
+    const badge=$('lvlBadge');
+    if (badge) badge.title='Ranked: '+rank.name+' · '+points+' RP'+(next?' · '+(next.min-points)+' RP to '+next.name:'');
+  };
+
+  /* ---------- Make Pulse shards feel like meaningful tactical power spikes ---------- */
+  const shardBuffs = {
+    overdrive:{duration:8,damageMult:1.28,incomingDamageMult:1.05,tradeoff:'Deal 28% more damage, take 5% more damage'},
+    phase:{duration:3.5,speedMult:1.7,damageMult:.95,tradeoff:'Move 70% faster for 3.5s'},
+    aegis:{duration:7,shield:35,speedMult:.94,tradeoff:'Gain 35 shield, move 6% slower'},
+    vitalflow:{duration:10,healPerSec:5,shieldPerSec:3,tradeoff:'Restore health and shield over 10s'},
+    pulseSurge:{duration:9,pulseDamageMult:1.28,tradeoff:'Pulse weapons deal 28% more damage'},
+    quickcycle:{duration:9,reloadMult:.65,tradeoff:'Reload 35% faster'},
+    deadeye:{duration:8,accuracyMult:.55,tradeoff:'Weapon spread reduced by 45%'},
+    kinetic:{duration:7,speedMult:1.3,tradeoff:'Move 30% faster'},
+    bulwark:{duration:8,incomingDamageMult:.68,tradeoff:'Take 32% less damage'},
+    capacitor:{duration:8,fireRateMult:.78,tradeoff:'Fire 22% faster'},
+    pulseguard:{duration:8,pulseDamageMult:1.2,incomingDamageMult:.84,tradeoff:'Pulse weapons deal 20% more damage and take 16% less damage'},
+    overclock:{duration:7,fireRateMult:.82,reloadMult:.78,tradeoff:'Fire 18% faster and reload 22% faster'}
+  };
+  for (const sc of SHARD_CONFIG) if (shardBuffs[sc.id]) Object.assign(sc,shardBuffs[sc.id]);
+  const _activateShard = activateShard;
+  activateShard = function(p) {
+    const before = p && p.shardCooldownUntil;
+    _activateShard(p);
+    if (!p || p !== G.u || !p.shardType || p.shardCooldownUntil === before) return;
+    const sc=SHARD_CONFIG.find(q=>q.id===p.shardType);
+    if(sc) { G.tip=sc.name+' ACTIVE · '+(sc.tradeoff||'Pulse power unleashed'); G.tt=2.2; }
+    if (sc && sc.id==='phase') {
+      p.pulseDashes=Math.min(3,(p.pulseDashes||0)+1);
+      G.tip='PHASE BURST · SPEED + DASH'; G.tt=2.2;
+    }
+    if (sc && sc.id==='aegis') {
+      p.sh=Math.min(100,p.sh+35);
+      for(let i=0;i<14;i++) G.fx.push({x:p.x,y:p.y,vx:(R()-.5)*150,vy:(R()-.5)*150,l:.45,c:sc.color});
+    }
+    if (sc && sc.id==='medwave') p.hp=Math.min(p.mh,p.hp+30);
+    if (sc && sc.id==='shieldwave') p.sh=Math.min(100,p.sh+35);
+    save();
+  };
 
   /* ---------- Wall editing: one edit per wall, edit again to reset ---------- */
   function applyEdit(w, sel) {
@@ -118,7 +190,33 @@
     }
   }
   const _ai = ai;
-  ai = function (b, dt) { _ai(b, dt); if (b.alive && !b.use && ((b.edT = (b.edT || 0) - dt) <= 0)) { b.edT = .5 + R() * .4; botEdit(b); } };
+  ai = function (b, dt) {
+    _ai(b, dt);
+    if (b.alive && G && G.mode !== 'box' && G.T > 12) {
+      /* Bosses are side objectives, not the bots' permanent target. Prefer nearby
+         living players and only let a minority of bots stay on a boss at a time. */
+      const target = b.tg;
+      const isBossTarget = target && target.alive && target.bossOnly;
+      if (isBossTarget) {
+        const nearby = G.P.filter(p => p !== b && p.alive && !p.bot &&
+          Math.hypot(p.x - b.x, p.y - b.y) < 760 && los(b, p))
+          .sort((a, z) => Math.hypot(a.x - b.x, a.y - b.y) - Math.hypot(z.x - b.x, z.y - b.y));
+        if (nearby.length && R() < .88) {
+          b.tg = nearby[0];
+          b.td = Math.hypot(nearby[0].x - b.x, nearby[0].y - b.y);
+          b.bossFocusUntil = G.T + 5 + R() * 4;
+        }
+      }
+      /* If a bot is already fighting a player, don't let the boss AI steal focus
+         every quarter-second. Retarget only when the player target is gone or far away. */
+      if (b.tg && !b.tg.bossOnly && (!b.tg.alive || Math.hypot(b.tg.x - b.x, b.tg.y - b.y) > 920)) {
+        b.tg = null; b.td = 1e9;
+      }
+    }
+    if (b.alive && !b.use && ((b.edT = (b.edT || 0) - dt) <= 0)) {
+      b.edT = .5 + R() * .4; botEdit(b);
+    }
+  };
 
   /* ---------- Gun feel: bloom, kick, shells, layered sound, crosshair, hit markers, banners ---------- */
   function gunNoise(w, loud) {
